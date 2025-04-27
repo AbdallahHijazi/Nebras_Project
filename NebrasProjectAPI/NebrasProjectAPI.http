@@ -1,0 +1,6 @@
+@NebrasProjectAPI_HostAddress = http://localhost:5143
+
+GET {{NebrasProjectAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
