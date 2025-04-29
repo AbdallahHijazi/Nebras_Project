@@ -5,6 +5,12 @@ using NebrasProjectRepository.SheardRepository;
 using NebrasProjectModels.Models.Users;
 using NebrasProjectDomain.Models;
 using NebrasProjectDTOs.DTOs.UsersDTO;
+using NebrasProjectModels.Profiles;
+using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Authorization;
 
 namespace NebrasProject.Controllers.User
 {
@@ -28,7 +34,7 @@ namespace NebrasProject.Controllers.User
             this.context = context;
             this.configuration = configuration;
         }
-
+        
         [HttpGet]
         public ActionResult<List<Users>> GetAll()
         {
@@ -55,6 +61,46 @@ namespace NebrasProject.Controllers.User
             {
                 return Ok(user);
             }
+        }
+        [HttpPost("authenticate")]
+        public ActionResult<string> Authenticate(AuthenticationUser authenticationUser)
+        {
+            var user = ValidateUserInformation(authenticationUser.Email, authenticationUser.password);
+            if(user == null)
+            {
+                return Unauthorized();
+            }
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
+
+            var secretKey = new SymmetricSecurityKey(
+                                Encoding.ASCII.GetBytes(configuration["Authentication:SecretKey"]));
+            var signingCred = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
+            var securityToken = new JwtSecurityToken(
+                configuration["Authentication:Issuer"],
+                configuration["Authentication:Audiance"],
+                claims,
+                DateTime.UtcNow,
+                DateTime.UtcNow.AddHours(9),
+                signingCred
+                );
+            var token = new JwtSecurityTokenHandler().WriteToken(securityToken);
+            return Ok(new { Token = token });
+                
+        }
+
+        private Users ValidateUserInformation(string email, string password)
+        {
+            var user = context.Users.FirstOrDefault(u => u.Email == email && u.Password == password);
+            if (user == null)
+            {
+                return null;
+            }
+            return user;
         }
 
         [HttpPost]
