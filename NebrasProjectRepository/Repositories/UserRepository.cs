@@ -11,6 +11,13 @@ namespace NebrasProjectRepository.Repositories
 {
     public class UserRepository : GenericRepository<Users>
     {
-        public UserRepository(AppDBContext context) : base(context) { }
+        private readonly AppDBContext context;
+
+        public UserRepository(AppDBContext context) : base(context)
+        {
+            this.context = context;
+        }
+
+      
     }
 }
