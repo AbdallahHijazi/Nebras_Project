@@ -34,7 +34,7 @@ namespace NebrasProjectRepository.SheardRepository
             return item;
         }
 
-        public T? Get(string id)
+        public T? Get(Guid id)
         {
             var item = context.Set<T>().Find(id);
             if (item == null)

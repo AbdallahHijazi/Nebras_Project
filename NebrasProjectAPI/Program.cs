@@ -1,5 +1,7 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using NebrasProjectDomain.Models;
+using NebrasProjectModels.Models.Governorates;
+using NebrasProjectModels.Models.Schools;
 using NebrasProjectModels.Models.Users;
 using NebrasProjectRepository.Repositories;
 using NebrasProjectRepository.SheardRepository;
@@ -15,6 +17,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<AppDBContext>();
 builder.Services.AddScoped<IRepository<Users>, UserRepository>();
+builder.Services.AddScoped<IRepository<School>, SchoolRepository>();
+builder.Services.AddScoped<IRepository<Governorate>, GovernorateRepository>();
+builder.Services.AddScoped<GovernorateRepository>();
+builder.Services.AddScoped<SchoolRepository>();
+
 
 builder.Services.AddAuthentication().AddJwtBearer(options =>
 {

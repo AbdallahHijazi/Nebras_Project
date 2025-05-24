@@ -50,7 +50,7 @@ namespace NebrasProject.Controllers.User
         }
 
         [HttpGet("{id}", Name = "GetUser")]
-        public ActionResult<Users> Get(string id)
+        public ActionResult<Users> Get(Guid id)
         {
             var user = repository.Get(id);
             if (user == null)
@@ -113,7 +113,6 @@ namespace NebrasProject.Controllers.User
 
             var users = new Users
             {
-                Id = Guid.NewGuid().ToString(),
                 UserName = user.UserName,
                 Email = user.Email,
                 Password = user.Password,
@@ -154,7 +153,7 @@ namespace NebrasProject.Controllers.User
             }
         }
         [HttpDelete("{id}")]
-        public ActionResult<Users> Delete(string id)
+        public ActionResult<Users> Delete(Guid id)
         {
             var user = repository.Get(id);
             if (user == null)

@@ -8,7 +8,7 @@ namespace NebrasProjectModels.Profiles
 {
     public class AuthenticationUser
     {
-        public string Email { get; set; }
-        public string password { get; set; }
+        public string Email { get; set; }=string.Empty;
+        public string password { get; set; } = string.Empty;
     }
 }

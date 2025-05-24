@@ -12,7 +12,7 @@ namespace NebrasProjectRepository.SheardRepository
 
         T Update(T entity);
 
-        T? Get(string id);
+        T? Get(Guid id);
 
         IList<T> GetAll();
 

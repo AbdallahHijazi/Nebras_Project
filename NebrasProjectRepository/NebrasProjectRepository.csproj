@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NebrasProjectDomain\NebrasProjectDomain.csproj" />
+    <ProjectReference Include="..\NebrasProjectDTOs\NebrasProjectDTOs.csproj" />
     <ProjectReference Include="..\NebrasProjectModels\NebrasProjectModels.csproj" />
   </ItemGroup>
 

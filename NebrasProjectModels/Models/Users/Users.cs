@@ -10,7 +10,7 @@ namespace NebrasProjectModels.Models.Users
     public class Users
     {
         [Key]
-        public string Id { get; set; } = "";
+        public Guid Id { get; set; } 
         public string UserName { get; set; } = "";
         public string Email { get; set; } = "";
         public string Password { get; set; } = "";
@@ -20,5 +20,9 @@ namespace NebrasProjectModels.Models.Users
         public string Address { get; set; } = "";
         public bool IsActive { get; set; } = true;
         public bool IsAdmin { get; set; } = false;
+        public Users()
+        {
+            Id = Guid.NewGuid();
+        }
     }
 }
