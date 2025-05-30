@@ -12,13 +12,13 @@ using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authorization;
 
-namespace NebrasProject.Controllers.User
+namespace NebrasProject.Controllers.Users
 {
     [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly IRepository<Users> repository;
+        private readonly IRepository<User> repository;
         private readonly AppDBContext context;
         private readonly IConfiguration configuration;
 
@@ -27,18 +27,18 @@ namespace NebrasProject.Controllers.User
             (
             AppDBContext context,
             IConfiguration configuration,
-            IRepository<Users> repository
+            IRepository<User> repository
             )
         {
             this.repository = repository;
             this.context = context;
             this.configuration = configuration;
         }
-        
+
         [HttpGet]
-        public ActionResult<List<Users>> GetAll()
+        public ActionResult<List<User>> GetAll()
         {
-            Users[] users = repository.GetAll().ToArray();
+            User[] users = repository.GetAll().ToArray();
             if (users == null)
             {
                 return NotFound("No data in the users");
@@ -50,7 +50,7 @@ namespace NebrasProject.Controllers.User
         }
 
         [HttpGet("{id}", Name = "GetUser")]
-        public ActionResult<Users> Get(Guid id)
+        public ActionResult<User> Get(Guid id)
         {
             var user = repository.Get(id);
             if (user == null)
@@ -66,13 +66,13 @@ namespace NebrasProject.Controllers.User
         public ActionResult<string> Authenticate(AuthenticationUser authenticationUser)
         {
             var user = ValidateUserInformation(authenticationUser.Email, authenticationUser.password);
-            if(user == null)
+            if (user == null)
             {
                 return Unauthorized();
             }
             var claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+                new Claim(JwtRegisteredClaimNames.Sub, user.Username),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
@@ -90,10 +90,10 @@ namespace NebrasProject.Controllers.User
                 );
             var token = new JwtSecurityTokenHandler().WriteToken(securityToken);
             return Ok(new { Token = token });
-                
+
         }
 
-        private Users ValidateUserInformation(string email, string password)
+        private User ValidateUserInformation(string email, string password)
         {
             var user = context.Users.FirstOrDefault(u => u.Email == email && u.Password == password);
             if (user == null)
@@ -104,48 +104,50 @@ namespace NebrasProject.Controllers.User
         }
 
         [HttpPost]
-        public ActionResult<Users> Post(CreateUser user)
+        public ActionResult<User> Post(CreateUser user)
         {
             if (user == null)
             {
                 return BadRequest("No data in the users");
             }
 
-            var users = new Users
+            var users = new User
             {
-                UserName = user.UserName,
                 Email = user.Email,
+                Username = user.Username,
                 Password = user.Password,
-                PhoneNumber = user.PhoneNumber,
-                Governorate = user.Governorate,
-                City = user.City,
-                Address = user.Address
+                FullName = user.FullName,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                RoleId = Guid.Parse("00000000-0000-0000-0000-000000000001")
+
             };
             var newUser = repository.Add(users);
             repository.SaveChenges();
-            return CreatedAtRoute("GetUser", new { id = newUser.Id }, newUser);
+            return CreatedAtRoute("GetUser", new { id = newUser.UserId }, newUser);
         }
 
         [HttpPut]
-        public ActionResult<Users> UpdateUser(UpdateUser user)
+        public ActionResult<User> UpdateUser(UpdateUser user)
         {
             if (user == null)
             {
                 return BadRequest("No data in the users");
             }
-            var oldUser = repository.Get(user.Id);
+            var oldUser = repository.Get(user.UserId);
             if (oldUser == null)
             {
                 return NotFound("this user not found");
             }
             else
             {
-                oldUser.UserName = user.UserName;
+                oldUser.Username = user.Username;
                 oldUser.Email = user.Email;
-                oldUser.PhoneNumber = user.PhoneNumber;
-                oldUser.Governorate = user.Governorate;
-                oldUser.City = user.City;
-                oldUser.Address = user.Address;
+                oldUser.Password = oldUser.Password;
+                oldUser.FullName = user.FullName;
+                oldUser.IsActive = oldUser.IsActive;
+                oldUser.RoleId = oldUser.RoleId;
+                oldUser.CreatedAt = oldUser.CreatedAt;
 
                 repository.Update(oldUser);
                 repository.SaveChenges();
@@ -153,7 +155,7 @@ namespace NebrasProject.Controllers.User
             }
         }
         [HttpDelete("{id}")]
-        public ActionResult<Users> Delete(Guid id)
+        public ActionResult<User> Delete(Guid id)
         {
             var user = repository.Get(id);
             if (user == null)

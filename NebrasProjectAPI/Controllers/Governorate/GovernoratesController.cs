@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using NebrasProjectDomain.Models;
 using NebrasProjectDTOs.DTOs.GovernorateDTO;
 using NebrasProjectModels.Models.Governorates;
@@ -29,7 +30,7 @@ namespace NebrasProjectAPI.Controllers.Governorates
         [HttpGet]
         public ActionResult<List<Governorate>> GetAll()
         {
-            Governorate[] governorates = repository.GetAll().ToArray();
+            var governorates = repository.GetAll().ToArray();
             if (governorates == null)
             {
                 return NotFound("No data in the governorates");
@@ -39,6 +40,7 @@ namespace NebrasProjectAPI.Controllers.Governorates
                 return Ok(governorates);
             }
         }
+
         [HttpGet("{id}/schools-summary", Name = "GetGovernorate")]
         public ActionResult<Governorate> Get(Guid id)
         {
@@ -56,30 +58,29 @@ namespace NebrasProjectAPI.Controllers.Governorates
         [HttpPost]
         public ActionResult<Governorate> Post(CreateGovernorate governorate)
         {
-            var schools = context.Schools
-                .Where(s => governorate.Schools.Contains(s.Id))
-                .ToList();
+
 
             var governorates = new Governorate
             {
-                Name = governorate.Name,
-                Description = governorate.Description,
-                DamageLevel = governorate.DamageLevel,
-                Address = governorate.Address,
-                Schools = schools
-
+                NameAr = governorate.NameAr,
+                NameEn = governorate.NameEn
             };
             if (governorates is null)
             {
                 return BadRequest("No data in the governorate");
             }
+            else if (governorate.NameEn.IsNullOrEmpty() || governorate.NameAr.IsNullOrEmpty())
+            {
+                return BadRequest("Name most be not enpty.");
+            }
             else
             {
                 repository.Add(governorates);
                 repository.SaveChenges();
-                return CreatedAtRoute("GetGovernorate", new { id = governorates.Id }, governorates);
+                return CreatedAtRoute("GetGovernorate", new { id = governorates.GovernorateId }, governorates);
             }
         }
+
         [HttpPut]
         public ActionResult<Governorate> Put(UpdateGovernorate governorate)
         {
@@ -90,19 +91,19 @@ namespace NebrasProjectAPI.Controllers.Governorates
             }
             else
             {
-                var schools = context.Schools
-                    .Where(s => governorate.Schools.Contains(s.Id))
-                    .ToList();
-                governorates.Name = governorate.Name;
-                governorates.Description = governorate.Description;
-                governorates.DamageLevel = governorate.DamageLevel;
-                governorates.Address = governorate.Address;
-                governorates.Schools = schools;
+                governorates.NameAr = governorate.NameAr;
+                governorates.NameEn = governorate.NameEn;
+                if (governorate.NameEn.IsNullOrEmpty() || governorate.NameAr.IsNullOrEmpty())
+                {
+                    return BadRequest("Name most be not enpty.");
+                }
+
                 repository.Update(governorates);
                 repository.SaveChenges();
                 return NoContent();
             }
         }
+
         [HttpDelete("{id}")]
         public ActionResult<Governorate> Delete(Guid id)
         {
@@ -117,16 +118,6 @@ namespace NebrasProjectAPI.Controllers.Governorates
                 repository.SaveChenges();
                 return NoContent();
             }
-        }
-        [HttpGet("info")]
-        public ActionResult<GovernoratesInfo> GetGovernoratesInfo()
-        {
-            var governorates=governorateRepository.GetGovernoratesInfo();
-            if (governorates is null)
-            {
-                return NotFound();
-            }
-            return Ok(governorates);
         }
 
     }

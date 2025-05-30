@@ -3,17 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NebrasProjectModels.Models.Roles;
+using NebrasProjectModels.Models.Schools;
 
 namespace NebrasProjectDTOs.DTOs.UsersDTO
 {
     public class CreateUser
     {
-        public string UserName { get; set; }=string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-        public string PhoneNumber { get; set; } = string.Empty;
-        public string Governorate { get; set; } = string.Empty;
-        public string City { get; set; } = string.Empty;
-        public string Address { get; set; } = string.Empty;
+        public string Username { get; set; }
+        public string Email { get; set; }
+        public string Password { get; set; }
+        public string FullName { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public bool IsActive { get; set; }
     }
 }

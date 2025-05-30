@@ -8,12 +8,9 @@ namespace NebrasProjectDTOs.DTOs.UsersDTO
 {
     public class UpdateUser
     {
-        public Guid Id { get; set; } 
-        public string UserName { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public string PhoneNumber { get; set; } = string.Empty;
-        public string Governorate { get; set; } = string.Empty;
-        public string City { get; set; } = string.Empty;
-        public string Address { get; set; } = string.Empty;
+        public Guid UserId { get; set; }
+        public string Username { get; set; }
+        public string Email { get; set; }
+        public string FullName { get; set; }
     }
 }

@@ -1,7 +1,9 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using NebrasProjectDomain.Models;
+using NebrasProjectModels.Models.Citys;
 using NebrasProjectModels.Models.Governorates;
 using NebrasProjectModels.Models.Schools;
+using NebrasProjectModels.Models.SchoolStatues;
 using NebrasProjectModels.Models.Users;
 using NebrasProjectRepository.Repositories;
 using NebrasProjectRepository.SheardRepository;
@@ -16,12 +18,25 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<AppDBContext>();
-builder.Services.AddScoped<IRepository<Users>, UserRepository>();
+builder.Services.AddScoped<IRepository<User>, UserRepository>();
 builder.Services.AddScoped<IRepository<School>, SchoolRepository>();
 builder.Services.AddScoped<IRepository<Governorate>, GovernorateRepository>();
+builder.Services.AddScoped<IRepository<City>, CitiesRepository>();
+builder.Services.AddScoped<IRepository<SchoolStatus>, SchoolStatusRepository>();
 builder.Services.AddScoped<GovernorateRepository>();
+builder.Services.AddScoped<CitiesRepository>();
 builder.Services.AddScoped<SchoolRepository>();
+builder.Services.AddScoped<SchoolStatusRepository>();
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins("http://localhost:4200") // Angular dev server
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
 builder.Services.AddAuthentication().AddJwtBearer(options =>
 {
@@ -30,10 +45,10 @@ builder.Services.AddAuthentication().AddJwtBearer(options =>
         ValidIssuer = builder.Configuration["Authentication:Issuer"],
         ValidAudience = builder.Configuration["Authentication:Audiance"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(
-                                                    builder.Configuration["Authentication:SecretKey"])),
+                                                    builder.Configuration["Authentication:SecretKey"]!)),
         ValidateIssuer = true,
         ValidateAudience = true,
-        ValidateIssuerSigningKey = true ,
+        ValidateIssuerSigningKey = true,
         //بسم الله
 
     };
@@ -50,6 +65,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
+app.UseCors();
 
 app.UseAuthorization();
 
