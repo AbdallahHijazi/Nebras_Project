@@ -2,6 +2,7 @@
 using NebrasProjectDomain.Models;
 using NebrasProjectModels.Models.Citys;
 using NebrasProjectModels.Models.Governorates;
+using NebrasProjectModels.Models.Photos;
 using NebrasProjectModels.Models.Schools;
 using NebrasProjectModels.Models.SchoolStatues;
 using NebrasProjectModels.Models.Users;
@@ -23,10 +24,13 @@ builder.Services.AddScoped<IRepository<School>, SchoolRepository>();
 builder.Services.AddScoped<IRepository<Governorate>, GovernorateRepository>();
 builder.Services.AddScoped<IRepository<City>, CitiesRepository>();
 builder.Services.AddScoped<IRepository<SchoolStatus>, SchoolStatusRepository>();
+builder.Services.AddScoped<IRepository<SchoolPhoto>,PhotosRepository>();
+
 builder.Services.AddScoped<GovernorateRepository>();
 builder.Services.AddScoped<CitiesRepository>();
 builder.Services.AddScoped<SchoolRepository>();
 builder.Services.AddScoped<SchoolStatusRepository>();
+builder.Services.AddScoped<PhotosRepository>();
 
 builder.Services.AddCors(options =>
 {
