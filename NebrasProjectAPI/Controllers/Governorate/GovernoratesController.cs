@@ -19,7 +19,7 @@ namespace NebrasProjectAPI.Controllers.Governorates
         public GovernoratesController(AppDBContext context,
                                       IRepository<Governorate> repository,
                                       GovernorateRepository governorateRepository
-)
+                                       )
         {
             this.context = context;
             this.repository = repository;
