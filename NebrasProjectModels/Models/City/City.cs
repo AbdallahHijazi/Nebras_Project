@@ -17,9 +17,9 @@ namespace NebrasProjectModels.Models.Citys
         public string NameEn { get; set; }
 
         public Guid GovernorateId { get; set; }
-        public Governorate Governorate { get; set; }
 
         public ICollection<School> Schools { get; set; }
+        public Governorate Governorate { get; set; }
         public City()
         {
             CityId = Guid.NewGuid();

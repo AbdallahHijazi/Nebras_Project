@@ -41,10 +41,24 @@ namespace NebrasProjectAPI.Controllers.Governorates
             }
         }
 
-        [HttpGet("{id}/schools-summary", Name = "GetGovernorate")]
-        public ActionResult<Governorate> Get(Guid id)
+        [HttpGet("{id}/schools-summary", Name = "GetGovernorateWithSchools")]
+        public async Task<ActionResult<GovernorateDetailsDTO>> GetGovernorateWithSchools(Guid id)
         {
-            var governorate = governorateRepository.GetGovernorateWithSchools(id);
+            var governorate = await governorateRepository.GetGovernorateWithSchools(id);
+            if (governorate == null)
+            {
+                return NotFound("No data in the governorates");
+            }
+            else
+            {
+                return Ok(governorate);
+            }
+        }
+
+        [HttpGet("{id}", Name = "GetGovernorate")]
+        public async Task<ActionResult<GovernorateDetailsDTO>> Get(Guid id)
+        {
+            var governorate = await governorateRepository.GetGovernorateWithSchools(id);
             if (governorate == null)
             {
                 return NotFound("No data in the governorates");

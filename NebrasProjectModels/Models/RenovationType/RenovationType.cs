@@ -12,8 +12,8 @@ namespace NebrasProjectModels.Models.RenovationTypes
     {
         [Key]
         public Guid RenovationTypeId { get; set; }
-        public string TypeNameAr { get; set; }
-        public string TypeNameEn { get; set; }
+        public string TypeNameAr { get; set; } = string.Empty;
+        public string TypeNameEn { get; set; } = string.Empty;
 
         public ICollection<SchoolRequiredRenovation> SchoolRequiredRenovations { get; set; }
         public RenovationType()

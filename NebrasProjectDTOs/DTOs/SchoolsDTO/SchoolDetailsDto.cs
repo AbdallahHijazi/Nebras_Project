@@ -25,20 +25,20 @@ namespace NebrasProjectDTOs.DTOs.SchoolsDTO
         public int YearEstablished { get; set; }
 
         public Guid CityId { get; set; }
-        public string CityName { get; set; }
+        public string CityName { get; set; } = string.Empty;
 
         public Guid SchoolTypeId { get; set; }
-        public string SchoolTypeName { get; set; }
+        public string SchoolTypeName { get; set; } = string.Empty;
 
         public Guid SchoolStatusId { get; set; }
-        public string SchoolStatusName { get; set; }
+        public string SchoolStatusName { get; set; }=string.Empty;
 
         public Guid AddedByUserId { get; set; }
-        public string AddedByUserName { get; set; }
+        public string AddedByUserName { get; set; } = string.Empty;
 
         public bool IsApproved { get; set; }
         public Guid? ApprovedByUserId { get; set; }
-        public string ApprovedByUserName { get; set; }
+        public string ApprovedByUserName { get; set; } = string.Empty;
         public List<RenovationRequestDto> RequiredRenovations { get; set; }
 
     }

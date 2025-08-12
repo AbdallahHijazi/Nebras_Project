@@ -15,11 +15,37 @@ namespace NebrasProjectRepository.Repositories
             this.context = context;
         }
 
-        public async Task<Governorate> GetGovernorateWithSchools(Guid id)
+        public async Task<GovernorateDetailsDTO> GetGovernorateWithSchools(Guid id)
         {
             var governorate = await context.Governorates
-                 .Include(g => g.Cities)
-                 .FirstOrDefaultAsync(g => g.GovernorateId == id);
+                .Where(g => g.GovernorateId == id)
+                .Select(g => new GovernorateDetailsDTO
+                {
+                    GovernorateId = g.GovernorateId,
+                    NameAr = g.NameAr,
+                    NameEn = g.NameEn,
+                    CityCount = g.Cities.Count,
+                    Cities = g.Cities.Select(c => new CityDetails
+                    {
+                        CityId = c.CityId,
+                        NameAr = c.NameAr,
+                        NameEn = c.NameEn,
+
+                        SchoolCount = c.Schools.Count,
+                        Schools = c.Schools.Select(s => new SchoolDetails
+                        {
+                            SchoolId = s.SchoolId,
+                            NameAr = s.NameAr,
+                            NameEn = s.NameEn,
+                            AddressDetails = s.AddressDetails,
+                            Latitude = s.Latitude,
+                            Longitude = s.Longitude,
+                            StudentCapacity = s.StudentCapacity,
+                            NumberOfClassrooms = s.NumberOfClassrooms,
+                            YearEstablished = s.YearEstablished
+                        }).ToList()
+                    }).ToList()
+                }).FirstOrDefaultAsync();
             if (governorate == null)
             {
                 return null; // Or throw an exception if preferred
@@ -27,20 +53,5 @@ namespace NebrasProjectRepository.Repositories
 
             return governorate;
         }
-
-        //public async Task<IList<GovernoratesInfo>> GetGovernoratesInfo()
-        //{
-        //    //var governorates = await context.Governorates
-        //    //    .Select(g => new GovernoratesInfo
-        //    //    {
-        //    //        Id = g.Id,
-        //    //        Name = g.Name,
-        //    //        SchoolCount = g.Schools.Count
-        //    //    }).ToListAsync();
-        //    //return governorates;
-        //    return null; // Placeholder for actual implementation
-
-        //}
-
     }
 }

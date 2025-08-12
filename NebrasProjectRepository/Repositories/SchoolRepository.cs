@@ -66,25 +66,9 @@ namespace NebrasProjectRepository.Repositories
             return schools;
         }
 
-
-        //public async Task<IList<SchoolsNameDTO>> GetSchoolNameAndId(Guid id)
-        //{
-        //    //var schools = await context.Schools.Where(s => s.GovernorateId == id)
-        //    //                           .Select(s => new SchoolsNameDTO
-        //    //                           {
-        //    //                               Name = s.Name,
-        //    //                               Id = s.Id.ToString()
-        //    //                           }).
-        //    //                           ToListAsync();
-
-        //    return null;
-        //}
-
         public async Task<School> GetSchoolsByDamageLevel(int min, int max)
         {
-            //var school = await context.Schools
-            //    .Where(s => s.DamageLevel <= min && s.DamageLevel >= max)
-            //    .FirstOrDefaultAsync();
+           
 
             return null;
         }

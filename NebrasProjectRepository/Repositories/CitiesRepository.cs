@@ -21,6 +21,9 @@ namespace NebrasProjectRepository.Repositories
                 .Where(c => c.CityId == cityId)
                 .Select(c => new CityWithSchoolsDto
                 {
+                    GovernorateId = c.GovernorateId,
+                    GovernorateNameAr = c.Governorate.NameAr,
+                    GovernorateNameEn = c.Governorate.NameEn,
                     CityId = c.CityId,
                     NameAr = c.NameAr,
                     NameEn = c.NameEn,
