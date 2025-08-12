@@ -109,6 +109,7 @@ namespace NebrasProjectAPI.Controllers.Citys
             context.SaveChanges();
             return NoContent();
         }
+
         [HttpDelete("{id}")]
         public ActionResult Delete(Guid id)
         {

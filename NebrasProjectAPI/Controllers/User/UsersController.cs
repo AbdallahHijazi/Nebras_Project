@@ -62,6 +62,7 @@ namespace NebrasProject.Controllers.Users
                 return Ok(user);
             }
         }
+
         [HttpPost("authenticate")]
         public ActionResult<string> Authenticate(AuthenticationUser authenticationUser)
         {
