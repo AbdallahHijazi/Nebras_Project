@@ -50,18 +50,66 @@ namespace NebrasProject.Controllers.Users
         }
 
         [HttpGet("{id}", Name = "GetUser")]
-        public ActionResult<User> Get(Guid id)
+        public ActionResult<UserDTO> Get(Guid id)
         {
             var user = repository.Get(id);
+
             if (user == null)
-            {
                 return NotFound("No data in the users");
-            }
-            else
+
+            FileData? profileImage = null;
+
+
+            string? base64String = null;
+            string? contentType = null;
+
+            if (!string.IsNullOrEmpty(user.ProfileImageUrl))
             {
-                return Ok(user);
+                // التأكد من أن اسم الملف آمن
+                var safeFileName = Path.GetFileName(user.ProfileImageUrl);
+
+                // المسار الكامل للملف
+                var filePath = Path.Combine("wwwroot/uploads", safeFileName);
+
+                // التحقق من وجود الملف
+                if (System.IO.File.Exists(filePath))
+                {
+                    var fileBytes = System.IO.File.ReadAllBytes(filePath);
+                    base64String = Convert.ToBase64String(fileBytes);
+
+                    // تحديد نوع المحتوى بناءً على امتداد الملف
+                    var extension = Path.GetExtension(filePath).ToLower();
+                    contentType = extension switch
+                    {
+                        ".jpg" or ".jpeg" => "image/jpeg",
+                        ".png" => "image/png",
+                        ".gif" => "image/gif",
+                        _ => "application/octet-stream"
+                    };
+                    profileImage = new FileData
+                    {
+                        Base64String = base64String,
+                        ContentType = contentType
+                    };
+                }
             }
+
+            var userDto = new UserDTO
+            {
+                UserId = user.UserId,
+                Username = user.Username,
+                Email = user.Email,
+                FullName = user.FullName,
+                Role = "Administrator",
+                CreatedAt = user.CreatedAt,
+                IsActive = user.IsActive,
+                ProfileImageUrl = profileImage
+
+            };
+
+            return Ok(userDto);
         }
+
 
         [HttpPost("authenticate")]
         public ActionResult<string> Authenticate(AuthenticationUser authenticationUser)
@@ -105,14 +153,35 @@ namespace NebrasProject.Controllers.Users
         }
 
         [HttpPost]
-        public ActionResult<User> Post(CreateUser user)
+        public async Task<ActionResult<User>> Post(CreateUser user)
         {
             if (user == null)
             {
                 return BadRequest("No data in the users");
             }
 
-            var users = new User
+            if (user.ProfileImageBase64 == null)
+            {
+                return BadRequest("Profile image is required.");
+            }
+
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+
+            var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(user.ProfileImageBase64.FileName);
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await user.ProfileImageBase64.CopyToAsync(stream);
+            }
+
+            var photoUrl = $"/uploads/{uniqueFileName}";
+
+            var userEntity = new User
             {
                 Email = user.Email,
                 Username = user.Username,
@@ -120,13 +189,16 @@ namespace NebrasProject.Controllers.Users
                 FullName = user.FullName,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow,
-                RoleId = Guid.Parse("00000000-0000-0000-0000-000000000001")
-
+                RoleId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                ProfileImageUrl = photoUrl
             };
-            var newUser = repository.Add(users);
+
+            var newUser = repository.Add(userEntity);
             repository.SaveChenges();
+
             return CreatedAtRoute("GetUser", new { id = newUser.UserId }, newUser);
         }
+
 
         [HttpPut]
         public ActionResult<User> UpdateUser(UpdateUser user)

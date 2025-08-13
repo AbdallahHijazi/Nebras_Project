@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 using NebrasProjectModels.Models.Roles;
 using NebrasProjectModels.Models.Schools;
 
@@ -16,9 +17,11 @@ namespace NebrasProjectModels.Models.Users
         public Role Role { get; set; }
         public DateTime CreatedAt { get; set; }
         public bool IsActive { get; set; }
+        public string? ProfileImageUrl { get; set; }
+
         public ICollection<School> AddedSchools { get; set; }
         public ICollection<School> ApprovedSchools { get; set; }
-        public User()
+        public User()   
         {
             UserId = Guid.NewGuid();
         }

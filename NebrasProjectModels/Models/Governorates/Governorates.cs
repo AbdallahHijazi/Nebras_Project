@@ -14,7 +14,9 @@ namespace NebrasProjectModels.Models.Governorates
         public Guid GovernorateId { get; set; }
         public string NameAr { get; set; }=string.Empty;
         public string NameEn { get; set; } = string.Empty;
-
+        public string Description { get; set; } = string.Empty;
+        public string GovernorateImage { get; set; } = string.Empty;
+     
         public ICollection<City> Cities { get; set; }
 
         public Governorate()
