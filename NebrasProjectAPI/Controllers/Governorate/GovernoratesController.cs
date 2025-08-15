@@ -2,7 +2,10 @@
 using Microsoft.IdentityModel.Tokens;
 using NebrasProjectDomain.Models;
 using NebrasProjectDTOs.DTOs.GovernorateDTO;
+using NebrasProjectDTOs.DTOs.Shared;
 using NebrasProjectModels.Models.Governorates;
+using NebrasProjectModels.Models.Schools;
+using NebrasProjectModels.Models.Users;
 using NebrasProjectRepository.Repositories;
 using NebrasProjectRepository.SheardRepository;
 
@@ -28,43 +31,83 @@ namespace NebrasProjectAPI.Controllers.Governorates
 
 
         [HttpGet]
-        public ActionResult<List<Governorate>> GetAll()
+        public ActionResult<List<GovernorateDetailsDTO>> GetAll()
         {
-            var governorates = repository.GetAll().ToArray();
-            if (governorates == null)
-            {
+            var governoratesData = repository.GetAll().ToList();
+
+            if (governoratesData == null || governoratesData.Count == 0)
                 return NotFound("No data in the governorates");
-            }
-            else
+
+            var governorates = new List<GovernorateDetailsDTO>();
+
+            foreach (var g in governoratesData)
             {
-                return Ok(governorates);
+                FileData? profileImage = null;
+
+                if (!string.IsNullOrEmpty(g?.GovernorateImage))
+                {
+                    var safeFileName = Path.GetFileName(g.GovernorateImage);
+                    var filePath = Path.Combine("wwwroot/uploads", safeFileName);
+
+                    if (System.IO.File.Exists(filePath))
+                    {
+                        var fileBytes = System.IO.File.ReadAllBytes(filePath);
+                        profileImage = new FileData
+                        {
+                            Base64String = Convert.ToBase64String(fileBytes),
+                            ContentType = Path.GetExtension(filePath).ToLower() switch
+                            {
+                                ".jpg" or ".jpeg" => "image/jpeg",
+                                ".png" => "image/png",
+                                ".gif" => "image/gif",
+                                _ => "application/octet-stream"
+                            }
+                        };
+                    }
+                }
+
+                governorates.Add(new GovernorateDetailsDTO
+                {
+                    GovernorateId = g.GovernorateId,
+                    NameAr = g.NameAr,
+                    NameEn = g.NameEn,
+                    Description = g.Description,
+                    CityCount = g.Cities?.Count ?? 0,
+                    SchoolCount = g.Cities?.SelectMany(c => c.Schools ?? Enumerable.Empty<School>()).Count() ?? 0,
+                    GovernorateImageUrl = profileImage!
+                });
             }
+
+
+            return Ok(governorates);
         }
 
-        [HttpGet("{id}/schools-summary", Name = "GetGovernorateWithSchools")]
-        public async Task<ActionResult<GovernorateDetailsDTO>> GetGovernorateWithSchools(Guid id)
-        {
-            var governorate = await governorateRepository.GetGovernorateWithSchools(id);
-            if (governorate == null)
-            {
-                return NotFound("No data in the governorates");
-            }
-            else
-            {
-                return Ok(governorate);
-            }
-        }
+
+        //[HttpGet("{id}/schools-summary", Name = "GetGovernorateWithSchools")]
+        //public async Task<ActionResult<GovernorateDetailsDTO>> GetGovernorateWithSchools(Guid id)
+        //{
+        //    var governorate = await governorateRepository.GetGovernorateDetails(id);
+        //    if (governorate == null)
+        //    {
+        //        return NotFound("No data in the governorates");
+        //    }
+        //    else
+        //    {
+        //        return Ok(governorate);
+        //    }
+        //}
 
         [HttpGet("{id}", Name = "GetGovernorate")]
         public async Task<ActionResult<GovernorateDetailsDTO>> Get(Guid id)
         {
-            var governorate = await governorateRepository.GetGovernorateWithSchools(id);
+            var governorate = await governorateRepository.GetGovernorateDetails(id);
             if (governorate == null)
             {
                 return NotFound("No data in the governorates");
             }
             else
             {
+
                 return Ok(governorate);
             }
         }
@@ -73,11 +116,28 @@ namespace NebrasProjectAPI.Controllers.Governorates
         public ActionResult<Governorate> Post(CreateGovernorate governorate)
         {
 
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
 
+            var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(governorate.GovImageBase64!.FileName);
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                governorate.GovImageBase64.CopyToAsync(stream);
+            }
+
+            var photoUrl = $"/uploads/{uniqueFileName}";
             var governorates = new Governorate
             {
                 NameAr = governorate.NameAr,
-                NameEn = governorate.NameEn
+                NameEn = governorate.NameEn,
+                Description = governorate.Description,
+                GovernorateImage = photoUrl
+
             };
             if (governorates is null)
             {
@@ -132,6 +192,19 @@ namespace NebrasProjectAPI.Controllers.Governorates
                 repository.SaveChenges();
                 return NoContent();
             }
+        }
+
+        [HttpGet("{id}/summary", Name = "GetGovernorateSummaryId")]
+        public async Task<ActionResult<GovernorateSummaryDTO>> GetGovernorateSummaryId(Guid id)
+        {
+            var governorateSummary = await governorateRepository.GetGovernorateSummary(id);
+
+            if (governorateSummary == null)
+            {
+                return NotFound("No data in the governorate summary");
+            }
+
+            return Ok(governorateSummary);
         }
 
     }

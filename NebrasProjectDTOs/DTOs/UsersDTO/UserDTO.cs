@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NebrasProjectDTOs.DTOs.GovernorateDTO;
+using NebrasProjectDTOs.DTOs.Shared;
 using NebrasProjectModels.Models.Roles;
 
 namespace NebrasProjectDTOs.DTOs.UsersDTO
@@ -17,10 +19,5 @@ namespace NebrasProjectDTOs.DTOs.UsersDTO
         public DateTime CreatedAt { get; set; }
         public bool IsActive { get; set; }
         public FileData? ProfileImageUrl { get; set; }
-    }
-    public class FileData
-    {
-        public string? Base64String { get; set; }
-        public string? ContentType { get; set; }
     }
 }

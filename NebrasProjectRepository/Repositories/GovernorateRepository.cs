@@ -1,7 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NebrasProjectDomain.Models;
 using NebrasProjectDTOs.DTOs.GovernorateDTO;
+using NebrasProjectDTOs.DTOs.Shared;
 using NebrasProjectModels.Models.Governorates;
+using NebrasProjectModels.Models.Users;
 using NebrasProjectRepository.SheardRepository;
 
 namespace NebrasProjectRepository.Repositories
@@ -15,8 +17,41 @@ namespace NebrasProjectRepository.Repositories
             this.context = context;
         }
 
-        public async Task<GovernorateDetailsDTO> GetGovernorateWithSchools(Guid id)
+        public async Task<GovernorateDetailsDTO> GetGovernorateDetails(Guid id)
         {
+            FileData? profileImage = null;
+
+            var gove = await context.Governorates
+                 .FirstOrDefaultAsync(g => g.GovernorateId == id);
+            string? base64String = null;
+            string? contentType = null;
+
+            if (!string.IsNullOrEmpty(gove!.GovernorateImage!))
+            {
+                var safeFileName = Path.GetFileName(gove!.GovernorateImage!);
+
+                var filePath = Path.Combine("wwwroot/uploads", safeFileName);
+
+                if (System.IO.File.Exists(filePath))
+                {
+                    var fileBytes = System.IO.File.ReadAllBytes(filePath);
+                    base64String = Convert.ToBase64String(fileBytes);
+
+                    var extension = Path.GetExtension(filePath).ToLower();
+                    contentType = extension switch
+                    {
+                        ".jpg" or ".jpeg" => "image/jpeg",
+                        ".png" => "image/png",
+                        ".gif" => "image/gif",
+                        _ => "application/octet-stream"
+                    };
+                    profileImage = new FileData
+                    {
+                        Base64String = base64String,
+                        ContentType = contentType
+                    };
+                }
+            }
             var governorate = await context.Governorates
                 .Where(g => g.GovernorateId == id)
                 .Select(g => new GovernorateDetailsDTO
@@ -25,26 +60,9 @@ namespace NebrasProjectRepository.Repositories
                     NameAr = g.NameAr,
                     NameEn = g.NameEn,
                     CityCount = g.Cities.Count,
-                    Cities = g.Cities.Select(c => new CityDetails
-                    {
-                        CityId = c.CityId,
-                        NameAr = c.NameAr,
-                        NameEn = c.NameEn,
-
-                        SchoolCount = c.Schools.Count,
-                        Schools = c.Schools.Select(s => new SchoolDetails
-                        {
-                            SchoolId = s.SchoolId,
-                            NameAr = s.NameAr,
-                            NameEn = s.NameEn,
-                            AddressDetails = s.AddressDetails,
-                            Latitude = s.Latitude,
-                            Longitude = s.Longitude,
-                            StudentCapacity = s.StudentCapacity,
-                            NumberOfClassrooms = s.NumberOfClassrooms,
-                            YearEstablished = s.YearEstablished
-                        }).ToList()
-                    }).ToList()
+                    Description = g.Description,
+                    SchoolCount = g.Cities.SelectMany(c => c.Schools).Count(),
+                    GovernorateImageUrl = profileImage!
                 }).FirstOrDefaultAsync();
             if (governorate == null)
             {
@@ -52,6 +70,53 @@ namespace NebrasProjectRepository.Repositories
             }
 
             return governorate;
+        }
+
+        public async Task<GovernorateSummaryDTO> GetGovernorateSummary(Guid id)
+        {
+            var governorateEntity = await context.Governorates
+           .Include(g => g.Cities)
+               .ThenInclude(c => c.Schools)
+           .FirstOrDefaultAsync(g => g.GovernorateId == id);
+
+            if (governorateEntity == null) return null;
+
+            int totalCities = governorateEntity.Cities.Count();
+
+            int totalSchools = governorateEntity.Cities.SelectMany(c => c.Schools).Count();
+
+
+            var governorateDTO = new GovernorateSummaryDTO
+            {
+                GovernorateId = governorateEntity.GovernorateId,
+                NameAr = governorateEntity.NameAr,
+                NameEn = governorateEntity.NameEn,
+                CoveredCities = totalCities,
+                TotalCities = governorateEntity.CityCount,
+                CoveredSchools = totalSchools,
+                TotalSchools = governorateEntity.SchoolCount,
+                DamagePercentage = 20,
+
+                SchoolsCoverage = new List<ChartDataDTO>
+                {
+                    new ChartDataDTO { Label = "Covered Schools", Value = totalSchools },
+                    new ChartDataDTO { Label = "Remaining Schools", Value = governorateEntity.SchoolCount }
+                },
+
+                CitiesCoverage = new List<ChartDataDTO>
+                {
+                    new ChartDataDTO { Label = "Covered Cities", Value = totalCities },
+                    new ChartDataDTO { Label = "Remaining Cities", Value = governorateEntity.CityCount }
+                },
+
+                DamageChart = new List<ChartDataDTO>
+                {
+                    new ChartDataDTO { Label = "Damaged Schools", Value = 80 },
+                    new ChartDataDTO { Label = "Undamaged Schools", Value = 20 }
+                }
+            };
+            return governorateDTO;
+
         }
     }
 }

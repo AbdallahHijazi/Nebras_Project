@@ -51,10 +51,10 @@ namespace NebrasProjectAPI.Controllers.Citys
         }
 
 
-        [HttpGet("city/{cityId}", Name = "GetCityWithSchools")]
-        public async Task<ActionResult<CityWithSchoolsDto>> GetCityWithSchools(Guid cityId)
+        [HttpGet("city/{cityId}", Name = "GetCityDetails")]
+        public async Task<ActionResult<CityDetailsDto>> GetCityDetails(Guid cityId)
         {
-            var city = await cities.GetCityWithSchools(cityId);
+            var city = await cities.GetCityDetailsById(cityId);
 
             if (city == null)
             {
@@ -64,9 +64,39 @@ namespace NebrasProjectAPI.Controllers.Citys
             return Ok(city);
         }
 
+        [HttpGet("governorates/{governorateId}/cities", Name = "GetCitiesByGovernorate")]
+        public async Task<ActionResult<List<CityDetailsDto>>> GetCitiesByGovernorate(Guid governorateId)
+
+        {
+            var Cities = await cities.GetCitiesByGovernorateId(governorateId);
+
+            if (Cities == null)
+            {
+                return NotFound("No data in the cities");
+            }
+
+            return Ok(Cities);
+        }
+
         [HttpPost]
         public ActionResult<City> Post(CreateCityDto city)
         {
+
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+
+            var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(city.CityBase64!.FileName);
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                city.CityBase64.CopyToAsync(stream);
+            }
+
+            var photoUrl = $"/uploads/{uniqueFileName}";
             var governorate = context.Governorates.FirstOrDefault(g => g.GovernorateId == city.GovernorateId);
             if (governorate is null)
             {
@@ -77,7 +107,8 @@ namespace NebrasProjectAPI.Controllers.Citys
             {
                 NameAr = city.NameAr,
                 NameEn = city.NameEn,
-                GovernorateId = city.GovernorateId
+                GovernorateId = city.GovernorateId,
+                CityImage = photoUrl,
             };
             repository.Add(newCity);
             context.SaveChanges();

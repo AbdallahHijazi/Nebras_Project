@@ -14,6 +14,10 @@ namespace NebrasProjectDTOs.DTOs.GovernorateDTO
         public Guid Id { get; set; }
         public string NameAr { get; set; } = string.Empty;
         public string NameEn { get; set; } = string.Empty;
+        public int CityCount { get; set; }
+        public int SchoolCount { get; set; }
+        public string Description { get; set; } = string.Empty;
+
 
     }
 }

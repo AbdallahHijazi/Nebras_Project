@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authorization;
+using NebrasProjectDTOs.DTOs.Shared;
 
 namespace NebrasProject.Controllers.Users
 {
@@ -65,19 +66,15 @@ namespace NebrasProject.Controllers.Users
 
             if (!string.IsNullOrEmpty(user.ProfileImageUrl))
             {
-                // التأكد من أن اسم الملف آمن
                 var safeFileName = Path.GetFileName(user.ProfileImageUrl);
 
-                // المسار الكامل للملف
                 var filePath = Path.Combine("wwwroot/uploads", safeFileName);
 
-                // التحقق من وجود الملف
                 if (System.IO.File.Exists(filePath))
                 {
                     var fileBytes = System.IO.File.ReadAllBytes(filePath);
                     base64String = Convert.ToBase64String(fileBytes);
 
-                    // تحديد نوع المحتوى بناءً على امتداد الملف
                     var extension = Path.GetExtension(filePath).ToLower();
                     contentType = extension switch
                     {
@@ -127,7 +124,7 @@ namespace NebrasProject.Controllers.Users
             };
 
             var secretKey = new SymmetricSecurityKey(
-                                Encoding.ASCII.GetBytes(configuration["Authentication:SecretKey"]));
+                                Encoding.ASCII.GetBytes(configuration["Authentication:SecretKey"]!));
             var signingCred = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
             var securityToken = new JwtSecurityToken(
                 configuration["Authentication:Issuer"],
@@ -160,18 +157,14 @@ namespace NebrasProject.Controllers.Users
                 return BadRequest("No data in the users");
             }
 
-            if (user.ProfileImageBase64 == null)
-            {
-                return BadRequest("Profile image is required.");
-            }
-
+           
             var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
             if (!Directory.Exists(uploadsFolder))
             {
                 Directory.CreateDirectory(uploadsFolder);
             }
 
-            var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(user.ProfileImageBase64.FileName);
+            var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(user.ProfileImageBase64!.FileName);
             var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
             using (var stream = new FileStream(filePath, FileMode.Create))
@@ -240,6 +233,47 @@ namespace NebrasProject.Controllers.Users
                 repository.Delete(user);
                 repository.SaveChenges();
                 return NoContent();
+            }
+        }
+
+        [HttpPut("changePassword")]
+        public ActionResult ChangePassword(string newPassword, Guid userId)
+        {
+
+            var oldUser = repository.Get(userId);
+            if (oldUser == null)
+            {
+                return NotFound();
+            }
+            else
+            {
+                oldUser.Username = oldUser.Username;
+                oldUser.Email = oldUser.Email;
+                oldUser.Password = newPassword;
+                oldUser.FullName = oldUser.FullName;
+                oldUser.IsActive = oldUser.IsActive;
+                oldUser.RoleId = oldUser.RoleId;
+                oldUser.CreatedAt = oldUser.CreatedAt;
+                repository.Update(oldUser);
+                repository.SaveChenges();
+                return NoContent();
+            }
+        }
+        [HttpGet("isValidPassword")]
+        public ActionResult<bool> IsValidPassword(string password, Guid userId)
+        {
+            var user = repository.Get(userId);
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+            if (user.Password == password)
+            {
+                return Ok(true);
+            }
+            else
+            {
+                return Ok(false);
             }
         }
     }

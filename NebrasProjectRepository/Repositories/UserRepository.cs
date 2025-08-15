@@ -18,6 +18,10 @@ namespace NebrasProjectRepository.Repositories
             this.context = context;
         }
 
-      
+        public async Task ChangePassword(string newPassword)
+        {
+
+        }
+
     }
 }
