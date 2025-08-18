@@ -30,6 +30,7 @@ builder.Services.AddScoped<GovernorateRepository>();
 builder.Services.AddScoped<CitiesRepository>();
 builder.Services.AddScoped<SchoolRepository>();
 builder.Services.AddScoped<SchoolStatusRepository>();
+builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<PhotosRepository>();
 
 builder.Services.AddCors(options =>

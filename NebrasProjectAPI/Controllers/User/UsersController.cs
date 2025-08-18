@@ -12,6 +12,7 @@ using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authorization;
 using NebrasProjectDTOs.DTOs.Shared;
+using NebrasProjectRepository.Repositories;
 
 namespace NebrasProject.Controllers.Users
 {
@@ -20,6 +21,7 @@ namespace NebrasProject.Controllers.Users
     public class UserController : ControllerBase
     {
         private readonly IRepository<User> repository;
+        private readonly UserRepository userRepository;
         private readonly AppDBContext context;
         private readonly IConfiguration configuration;
 
@@ -28,10 +30,12 @@ namespace NebrasProject.Controllers.Users
             (
             AppDBContext context,
             IConfiguration configuration,
-            IRepository<User> repository
+            IRepository<User> repository,
+            UserRepository userRepository
             )
         {
             this.repository = repository;
+            this.userRepository = userRepository;
             this.context = context;
             this.configuration = configuration;
         }
@@ -51,61 +55,18 @@ namespace NebrasProject.Controllers.Users
         }
 
         [HttpGet("{id}", Name = "GetUser")]
-        public ActionResult<UserDTO> Get(Guid id)
+        public async Task<ActionResult<UserDTO>> Get(Guid id)
         {
-            var user = repository.Get(id);
+            var user = await userRepository.GetByIdAsync(id);
 
             if (user == null)
-                return NotFound("No data in the users");
-
-            FileData? profileImage = null;
-
-
-            string? base64String = null;
-            string? contentType = null;
-
-            if (!string.IsNullOrEmpty(user.ProfileImageUrl))
             {
-                var safeFileName = Path.GetFileName(user.ProfileImageUrl);
-
-                var filePath = Path.Combine("wwwroot/uploads", safeFileName);
-
-                if (System.IO.File.Exists(filePath))
-                {
-                    var fileBytes = System.IO.File.ReadAllBytes(filePath);
-                    base64String = Convert.ToBase64String(fileBytes);
-
-                    var extension = Path.GetExtension(filePath).ToLower();
-                    contentType = extension switch
-                    {
-                        ".jpg" or ".jpeg" => "image/jpeg",
-                        ".png" => "image/png",
-                        ".gif" => "image/gif",
-                        _ => "application/octet-stream"
-                    };
-                    profileImage = new FileData
-                    {
-                        Base64String = base64String,
-                        ContentType = contentType
-                    };
-                }
+                return NotFound(new { message = "User not found" });
             }
 
-            var userDto = new UserDTO
-            {
-                UserId = user.UserId,
-                Username = user.Username,
-                Email = user.Email,
-                FullName = user.FullName,
-                Role = "Administrator",
-                CreatedAt = user.CreatedAt,
-                IsActive = user.IsActive,
-                ProfileImageUrl = profileImage
-
-            };
-
-            return Ok(userDto);
+            return Ok(user);
         }
+
 
 
         [HttpPost("authenticate")]
@@ -157,7 +118,7 @@ namespace NebrasProject.Controllers.Users
                 return BadRequest("No data in the users");
             }
 
-           
+
             var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
             if (!Directory.Exists(uploadsFolder))
             {
