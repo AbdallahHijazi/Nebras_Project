@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
-using NebrasProjectModels.Models.Roles;
 using NebrasProjectModels.Models.Schools;
 
 namespace NebrasProjectModels.Models.Users
@@ -14,7 +13,6 @@ namespace NebrasProjectModels.Models.Users
         public string Password { get; set; }
         public string FullName { get; set; }
         public Guid RoleId { get; set; }
-        public Role Role { get; set; }
         public DateTime CreatedAt { get; set; }
         public bool IsActive { get; set; }
         public string? ProfileImageUrl { get; set; }

@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using NebrasProjectDTOs.DTOs.GovernorateDTO;
 using NebrasProjectDTOs.DTOs.Shared;
-using NebrasProjectModels.Models.Roles;
 
 namespace NebrasProjectDTOs.DTOs.UsersDTO
 {

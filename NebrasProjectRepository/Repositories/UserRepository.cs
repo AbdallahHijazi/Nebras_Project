@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using NebrasProjectDomain.Models;
 using NebrasProjectDTOs.DTOs.Shared;
 using NebrasProjectDTOs.DTOs.UsersDTO;
@@ -62,12 +57,12 @@ namespace NebrasProjectRepository.Repositories
                 .Where(s => s.AddedByUserId == user.UserId)
                 .Select(s => new SchoolDto
                 {
-                    SchoolId = s.SchoolId,
-                    CityName = s.City != null ? s.City.NameAr : string.Empty,
-                    SchoolName = s.NameAr,
-                    GovernorateName = s.City!.Governorate != null ? s.City.Governorate.NameAr : string.Empty,
-                    CityId = s.City != null ? s.City.CityId : Guid.Empty,
-                    GovernorateId = s.City!.Governorate != null ? s.City.Governorate.GovernorateId : Guid.Empty
+                    //SchoolId = s.SchoolId,
+                    //CityName = s.City != null ? s.City.NameAr : string.Empty,
+                    //SchoolName = s.NameAr,
+                    //GovernorateName = s.City!.Governorate != null ? s.City.Governorate.NameAr : string.Empty,
+                    //CityId = s.City != null ? s.City.CityId : Guid.Empty,
+                    //GovernorateId = s.City!.Governorate != null ? s.City.Governorate.GovernorateId : Guid.Empty
                 })
                 .ToListAsync();
 

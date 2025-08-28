@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NebrasProjectDomain.Models;
 
@@ -11,9 +12,11 @@ using NebrasProjectDomain.Models;
 namespace NebrasProjectDomain.Migrations
 {
     [DbContext(typeof(AppDBContext))]
-    partial class AppDBContextModelSnapshot : ModelSnapshot
+    [Migration("20250828202954_update-school-models")]
+    partial class updateschoolmodels
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -145,7 +148,7 @@ namespace NebrasProjectDomain.Migrations
                     b.Property<decimal>("EstimatedRenovationCost")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<Guid>("GovernorateId")
+                    b.Property<Guid>("GovernortesId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("HeadTeacherName")
@@ -162,18 +165,11 @@ namespace NebrasProjectDomain.Migrations
                     b.Property<bool>("IsApproved")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsRequirementsMet")
-                        .HasColumnType("bit");
-
                     b.Property<string>("NameAr")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("NameEn")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.PrimitiveCollection<string>("Needs")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 

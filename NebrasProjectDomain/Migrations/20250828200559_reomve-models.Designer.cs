@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NebrasProjectDomain.Models;
 
@@ -11,9 +12,11 @@ using NebrasProjectDomain.Models;
 namespace NebrasProjectDomain.Migrations
 {
     [DbContext(typeof(AppDBContext))]
-    partial class AppDBContextModelSnapshot : ModelSnapshot
+    [Migration("20250828200559_reomve-models")]
+    partial class reomvemodels
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -125,36 +128,25 @@ namespace NebrasProjectDomain.Migrations
                     b.Property<Guid>("AddedByUserId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("ApprovedByUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("City")
+                    b.Property<string>("AddressDetails")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("CityId")
+                    b.Property<Guid?>("ApprovedByUserId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ConditionDescription")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<decimal>("EstimatedRenovationCost")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<Guid>("GovernorateId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("HeadTeacherName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("HeadTeacherNumber")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -162,8 +154,11 @@ namespace NebrasProjectDomain.Migrations
                     b.Property<bool>("IsApproved")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsRequirementsMet")
-                        .HasColumnType("bit");
+                    b.Property<double>("Latitude")
+                        .HasColumnType("float");
+
+                    b.Property<double>("Longitude")
+                        .HasColumnType("float");
 
                     b.Property<string>("NameAr")
                         .IsRequired()
@@ -173,9 +168,17 @@ namespace NebrasProjectDomain.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.PrimitiveCollection<string>("Needs")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("NumberOfClassrooms")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("SchoolStatusId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("SchoolTypeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("StudentCapacity")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -185,6 +188,9 @@ namespace NebrasProjectDomain.Migrations
 
                     b.Property<Guid?>("UserId1")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("YearEstablished")
+                        .HasColumnType("int");
 
                     b.HasKey("SchoolId");
 
@@ -250,7 +256,7 @@ namespace NebrasProjectDomain.Migrations
             modelBuilder.Entity("NebrasProjectModels.Models.Photos.SchoolPhoto", b =>
                 {
                     b.HasOne("NebrasProjectModels.Models.Schools.School", "School")
-                        .WithMany()
+                        .WithMany("Photos")
                         .HasForeignKey("SchoolId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -260,9 +266,11 @@ namespace NebrasProjectDomain.Migrations
 
             modelBuilder.Entity("NebrasProjectModels.Models.Schools.School", b =>
                 {
-                    b.HasOne("NebrasProjectModels.Models.Citys.City", null)
+                    b.HasOne("NebrasProjectModels.Models.Citys.City", "City")
                         .WithMany("Schools")
-                        .HasForeignKey("CityId");
+                        .HasForeignKey("CityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("NebrasProjectModels.Models.Users.User", null)
                         .WithMany("AddedSchools")
@@ -271,6 +279,8 @@ namespace NebrasProjectDomain.Migrations
                     b.HasOne("NebrasProjectModels.Models.Users.User", null)
                         .WithMany("ApprovedSchools")
                         .HasForeignKey("UserId1");
+
+                    b.Navigation("City");
                 });
 
             modelBuilder.Entity("NebrasProjectModels.Models.Citys.City", b =>
@@ -281,6 +291,11 @@ namespace NebrasProjectDomain.Migrations
             modelBuilder.Entity("NebrasProjectModels.Models.Governorates.Governorate", b =>
                 {
                     b.Navigation("Cities");
+                });
+
+            modelBuilder.Entity("NebrasProjectModels.Models.Schools.School", b =>
+                {
+                    b.Navigation("Photos");
                 });
 
             modelBuilder.Entity("NebrasProjectModels.Models.Users.User", b =>

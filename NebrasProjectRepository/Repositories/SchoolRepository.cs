@@ -23,46 +23,41 @@ namespace NebrasProjectRepository.Repositories
             if (governorate == null)
                 return new List<SchoolDetailsDto>(); // أو throw NotFoundException إذا كنت تستخدم service layer
 
-            var schools = await context.Schools
-               .Where(s => s.City.GovernorateId == governorateId)
-               .Select(s => new SchoolDetailsDto
-               {
-                   SchoolId = s.SchoolId,
-                   NameAr = s.NameAr,
-                   NameEn = s.NameEn,
-                   CityId = s.CityId,
-                   AddressDetails = s.AddressDetails,
-                   Latitude = s.Latitude,
-                   Longitude = s.Longitude,
-                   ConditionDescription = s.ConditionDescription,
-                   EstimatedRenovationCost = s.EstimatedRenovationCost,
-                   AddedByUserId = s.AddedByUserId,
-                   StudentCapacity = s.StudentCapacity,
-                   NumberOfClassrooms = s.NumberOfClassrooms,
-                   YearEstablished = s.YearEstablished,
-                   SchoolTypeId = s.SchoolTypeId,
-                   SchoolStatusId = s.SchoolStatusId,
-                   AddedByUserName = context.Users
-                        .Where(u => u.UserId == s.AddedByUserId)
-                        .Select(u => u.FullName)
-                        .FirstOrDefault()!,
-                   ApprovedByUserId = s.ApprovedByUserId,
-                   ApprovedByUserName = context.Users
-                        .Where(u => u.UserId == s.ApprovedByUserId)
-                        .Select(u => u.FullName)
-                        .FirstOrDefault()!,
-                   IsApproved = s.IsApproved,
-                   RequiredRenovations = s.RequiredRenovations.Select(r => new RenovationRequestDto
-                   {
-                       RenovationTypeId = r.RenovationTypeId,
-                       Notes = r.Notes
-                   }).ToList(),
+            //var schools = await context.Schools
+            //   .Where(s => s.City.GovernorateId == governorateId)
+            //   .Select(s => new SchoolDetailsDto
+            //   {
+            //       SchoolId = s.SchoolId,
+            //       NameAr = s.NameAr,
+            //       NameEn = s.NameEn,
+            //       CityId = s.CityId,
+            //       AddressDetails = s.AddressDetails,
+            //       Latitude = s.Latitude,
+            //       Longitude = s.Longitude,
+            //       ConditionDescription = s.ConditionDescription,
+            //       EstimatedRenovationCost = s.EstimatedRenovationCost,
+            //       AddedByUserId = s.AddedByUserId,
+            //       StudentCapacity = s.StudentCapacity,
+            //       NumberOfClassrooms = s.NumberOfClassrooms,
+            //       YearEstablished = s.YearEstablished,
+            //       SchoolTypeId = s.SchoolTypeId,
+            //       SchoolStatusId = s.SchoolStatusId,
+            //       AddedByUserName = context.Users
+            //            .Where(u => u.UserId == s.AddedByUserId)
+            //            .Select(u => u.FullName)
+            //            .FirstOrDefault()!,
+            //       ApprovedByUserId = s.ApprovedByUserId,
+            //       ApprovedByUserName = context.Users
+            //            .Where(u => u.UserId == s.ApprovedByUserId)
+            //            .Select(u => u.FullName)
+            //            .FirstOrDefault()!,
+            //       IsApproved = s.IsApproved,
+                   
 
-                   SchoolStatusName = s.SchoolStatus.StatusNameAr,
-                   SchoolTypeName = s.SchoolType.TypeNameAr,
-                   CityName = s.City.NameAr,
-               }).ToListAsync();
-
+                   
+            //       CityName = s.City.NameAr,
+            //   }).ToListAsync();
+            var schools = new List<SchoolDetailsDto>();
             return schools;
         }
 

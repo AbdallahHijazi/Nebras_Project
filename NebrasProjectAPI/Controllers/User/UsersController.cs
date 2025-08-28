@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.AspNetCore.Mvc;
 using NebrasProjectRepository.SheardRepository;
 using NebrasProjectModels.Models.Users;
 using NebrasProjectDomain.Models;
@@ -10,8 +8,6 @@ using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;
-using Microsoft.AspNetCore.Authorization;
-using NebrasProjectDTOs.DTOs.Shared;
 using NebrasProjectRepository.Repositories;
 
 namespace NebrasProject.Controllers.Users

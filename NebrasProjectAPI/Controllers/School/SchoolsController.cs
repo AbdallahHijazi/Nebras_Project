@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using NebrasProjectDomain.Models;
 using NebrasProjectDTOs.DTOs.SchoolsDTO;
-using NebrasProjectModels.Models.SchoolRequiredRenovations;
 using NebrasProjectModels.Models.Schools;
 using NebrasProjectRepository.Repositories;
 using NebrasProjectRepository.SheardRepository;
@@ -53,63 +52,53 @@ namespace NebrasProjectAPI.Controllers.Schools
                 return Ok(school);
             }
         }
+
         [HttpPost]
         public async Task<ActionResult<SchoolDetailsDto>> Post(CreateSchool dto)
         {
+            if (dto == null)
+                return BadRequest("Invalid request payload.");
+
+            if (string.IsNullOrWhiteSpace(dto.NameAr) ||
+               string.IsNullOrWhiteSpace(dto.NameEn) ||
+               string.IsNullOrWhiteSpace(dto.City) ||
+               string.IsNullOrWhiteSpace(dto.HeadTeacherName) ||
+               string.IsNullOrWhiteSpace(dto.HeadTeacherNumber))
+            {
+                return BadRequest("Missing required fields: NameAr, NameEn, City, HeadTeacherName, HeadTeacherNumber.");
+            }
+
+            if (dto.UserId == Guid.Empty || dto.GovernorateId == Guid.Empty)
+            {
+                return BadRequest("Invalid UserId or GovernorateId.");
+            }
+
+            var user = await context.Users.FindAsync(dto.UserId);
+            if (user == null)
+                return NotFound($"User with ID {dto.UserId} not found.");
+
+            var governorate = await context.Governorates.FindAsync(dto.GovernorateId);
+            if (governorate == null)
+                return NotFound($"Governorate with ID {dto.GovernorateId} not found.");
+
+            var school = new School
+            {
+                NameAr = dto.NameAr.Trim(),
+                NameEn = dto.NameEn.Trim(),
+                City = dto.City.Trim(),
+                Description = dto.Description?.Trim(),
+                EstimatedRenovationCost = dto.EstimatedRenovationCost,
+                GovernorateId = dto.GovernorateId,
+                HeadTeacherName = dto.HeadTeacherName.Trim(),
+                HeadTeacherNumber = dto.HeadTeacherNumber.Trim(),
+                AddedByUserId = dto.UserId,
+                IsApproved = false,
+                IsRequirementsMet = false,
+                Needs = dto.Needs ?? new List<string>(),
+            };
+
             try
             {
-                if (dto == null)
-                    return BadRequest("School data is required.");
-
-                if (string.IsNullOrWhiteSpace(dto.NameAr) || string.IsNullOrWhiteSpace(dto.NameEn))
-                    return BadRequest("School name (Arabic and English) is required.");
-
-                var city = await context.Cities.FindAsync(dto.CityId);
-                if (city == null)
-                    return NotFound("City not found.");
-
-                var schoolType = await context.SchoolTypes.FindAsync(dto.SchoolTypeId);
-                if (schoolType == null)
-                    return NotFound("School type not found.");
-
-                var schoolStatus = await context.SchoolStatuses.FindAsync(dto.SchoolStatusId);
-                if (schoolStatus == null)
-                    return NotFound("School status not found.");
-
-                var addedBy = await context.Users.FindAsync(dto.AddedByUserId);
-                if (addedBy == null)
-                    return NotFound("User who added the school was not found.");
-
-                var school = new School
-                {
-                    NameAr = dto.NameAr.Trim(),
-                    NameEn = dto.NameEn.Trim(),
-                    AddressDetails = dto.AddressDetails?.Trim()!,
-                    CityId = dto.CityId,
-                    SchoolTypeId = dto.SchoolTypeId,
-                    SchoolStatusId = dto.SchoolStatusId,
-                    Latitude = dto.Latitude,
-                    Longitude = dto.Longitude,
-                    ConditionDescription = dto.ConditionDescription,
-                    EstimatedRenovationCost = dto.EstimatedRenovationCost,
-                    StudentCapacity = dto.StudentCapacity,
-                    NumberOfClassrooms = dto.NumberOfClassrooms,
-                    YearEstablished = dto.YearEstablished,
-                    AddedByUserId = dto.AddedByUserId,
-                    IsApproved = false,
-                    IsActive = true
-                };
-
-                if (dto.RequiredRenovations?.Any() == true)
-                {
-                    school.RequiredRenovations = dto.RequiredRenovations?.Select(r => new SchoolRequiredRenovation
-                    {
-                        RenovationTypeId = r.RenovationTypeId,
-                        Notes = r.Notes
-                    }).ToList()!;
-
-                }
-
                 await context.Schools.AddAsync(school);
                 await context.SaveChangesAsync();
 
@@ -118,35 +107,23 @@ namespace NebrasProjectAPI.Controllers.Schools
                     SchoolId = school.SchoolId,
                     NameAr = school.NameAr,
                     NameEn = school.NameEn,
-                    AddressDetails = school.AddressDetails,
-                    Latitude = school.Latitude,
-                    Longitude = school.Longitude,
-                    ConditionDescription = school.ConditionDescription,
+                    City = school.City,
+                    Description = school.Description,
                     EstimatedRenovationCost = school.EstimatedRenovationCost,
-                    StudentCapacity = school.StudentCapacity,
-                    NumberOfClassrooms = school.NumberOfClassrooms,
-                    YearEstablished = school.YearEstablished,
-                    CityId = school.CityId,
-                    CityName = city.NameAr,
-                    SchoolTypeId = school.SchoolTypeId,
-                    SchoolStatusId = school.SchoolStatusId,
+                    GovernortesId = school.GovernorateId,
+                    HeadTeacherName = school.HeadTeacherName,
+                    HeadTeacherNumber = school.HeadTeacherNumber,
                     AddedByUserId = school.AddedByUserId,
-                    AddedByUserName = addedBy.FullName,
                     IsApproved = school.IsApproved,
-                    ApprovedByUserId = null,
-                    ApprovedByUserName = null,
-                    RequiredRenovations = school.RequiredRenovations?.Select(r => new RenovationRequestDto
-                    {
-                        RenovationTypeId = r.RenovationTypeId,
-                        Notes = r.Notes
-                    }).ToList()!
+                    IsRequirementsMet = school.IsRequirementsMet,
+                    Needs = school.Needs
                 };
 
                 return CreatedAtAction(nameof(Get), new { id = school.SchoolId }, result);
             }
             catch (DbUpdateException dbEx)
             {
-                return StatusCode(500, $"Database error: {dbEx.Message}");
+                return StatusCode(500, $"Database error: {dbEx.InnerException?.Message ?? dbEx.Message}");
             }
             catch (Exception ex)
             {
@@ -158,65 +135,57 @@ namespace NebrasProjectAPI.Controllers.Schools
         public async Task<IActionResult> Put(UpdateSchool dto)
         {
             if (dto == null)
-                return BadRequest("Invalid school data or ID mismatch.");
+                return BadRequest("Invalid request payload or ID mismatch.");
 
-            var school = await context.Schools
-                .Include(s => s.RequiredRenovations)
-                .FirstOrDefaultAsync(s => s.SchoolId == dto.SchoolId);
+            if (string.IsNullOrWhiteSpace(dto.NameAr) ||
+                string.IsNullOrWhiteSpace(dto.NameEn) ||
+                string.IsNullOrWhiteSpace(dto.City) ||
+                string.IsNullOrWhiteSpace(dto.HeadTeacherName) ||
+                string.IsNullOrWhiteSpace(dto.HeadTeacherNumber))
+            {
+                return BadRequest("Missing required fields.");
+            }
 
+            if (dto.UserId == Guid.Empty || dto.GovernorateId == Guid.Empty)
+                return BadRequest("Invalid UserId or GovernorateId.");
+
+            var school = await context.Schools.FindAsync(dto.SchoolId);
             if (school == null)
                 return NotFound($"School with ID {dto.SchoolId} not found.");
 
-            if (!await context.Cities.AnyAsync(c => c.CityId == dto.CityId))
-                return NotFound("City not found.");
+            if (!await context.Users.AnyAsync(u => u.UserId == dto.UserId))
+                return NotFound($"User with ID {dto.UserId} not found.");
 
-            if (!await context.SchoolTypes.AnyAsync(t => t.SchoolTypeId == dto.SchoolTypeId))
-                return NotFound("School type not found.");
-
-            if (!await context.SchoolStatuses.AnyAsync(s => s.SchoolStatusId == dto.SchoolStatusId))
-                return NotFound("School status not found.");
-
-            school.NameAr = dto.NameAr.Trim();
-            school.NameEn = dto.NameEn.Trim();
-            school.AddressDetails = dto.AddressDetails?.Trim()!;
-            school.CityId = dto.CityId;
-            school.SchoolTypeId = dto.SchoolTypeId;
-            school.SchoolStatusId = dto.SchoolStatusId;
-            school.Latitude = dto.Latitude;
-            school.Longitude = dto.Longitude;
-            school.ConditionDescription = dto.ConditionDescription;
-            school.EstimatedRenovationCost = dto.EstimatedRenovationCost;
-            school.StudentCapacity = dto.StudentCapacity;
-            school.NumberOfClassrooms = dto.NumberOfClassrooms;
-            school.YearEstablished = dto.YearEstablished;
-
-            school.RequiredRenovations.Clear();
-
-            if (dto.RequiredRenovations?.Any() == true)
-            {
-                school.RequiredRenovations = dto.RequiredRenovations.Select(r => new SchoolRequiredRenovation
-                {
-                    RenovationTypeId = r.RenovationTypeId,
-                    Notes = r.Notes,
-                    SchoolId = school.SchoolId
-                }).ToList();
-            }
+            if (!await context.Governorates.AnyAsync(g => g.GovernorateId == dto.GovernorateId))
+                return NotFound($"Governorate with ID {dto.GovernorateId} not found.");
 
             try
             {
+                school.NameAr = dto.NameAr.Trim();
+                school.NameEn = dto.NameEn.Trim();
+                school.City = dto.City.Trim();
+                school.Description = dto.Description?.Trim();
+                school.EstimatedRenovationCost = dto.EstimatedRenovationCost;
+                school.GovernorateId = dto.GovernorateId;
+                school.HeadTeacherName = dto.HeadTeacherName.Trim();
+                school.HeadTeacherNumber = dto.HeadTeacherNumber.Trim();
+                school.UpdatedAt = DateTime.UtcNow;
+                school.IsRequirementsMet = dto.IsRequirementsMet;
+                school.Needs = dto.Needs ?? new List<string>();
+                repository.Update(school);
                 await context.SaveChangesAsync();
-                return NoContent(); // 204
+
+                return NoContent();
             }
             catch (DbUpdateException ex)
             {
-                return StatusCode(500, $"Database update error: {ex.Message}");
+                return StatusCode(500, $"Database update error: {ex.InnerException?.Message ?? ex.Message}");
             }
             catch (Exception ex)
             {
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-
 
         [HttpDelete("{id}")]
         public ActionResult Delete(Guid id)
