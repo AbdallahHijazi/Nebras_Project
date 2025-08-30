@@ -47,7 +47,7 @@ namespace NebrasProjectAPI.Controllers.Governorates
                 if (!string.IsNullOrEmpty(g?.GovernorateImage))
                 {
                     var safeFileName = Path.GetFileName(g.GovernorateImage);
-                    var filePath = Path.Combine("wwwroot/uploads", safeFileName);
+                    var filePath = Path.Combine("wwwroot/uploads/governorates", safeFileName);
 
                     if (System.IO.File.Exists(filePath))
                     {
@@ -113,47 +113,55 @@ namespace NebrasProjectAPI.Controllers.Governorates
         }
 
         [HttpPost]
-        public ActionResult<Governorate> Post(CreateGovernorate governorate)
+        public async Task<ActionResult<Governorate>> Post(CreateGovernorate governorate)
         {
+            try
+            {
+                if (governorate == null)
+                    return BadRequest("No data in the governorate");
 
-            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-            if (!Directory.Exists(uploadsFolder))
-            {
-                Directory.CreateDirectory(uploadsFolder);
-            }
+                if (string.IsNullOrWhiteSpace(governorate.NameAr) || string.IsNullOrWhiteSpace(governorate.NameEn))
+                    return BadRequest("NameAr and NameEn must not be empty.");
 
-            var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(governorate.GovImageBase64!.FileName);
-            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                string? photoUrl = null;
 
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                governorate.GovImageBase64.CopyToAsync(stream);
-            }
+                if (governorate.GovImageBase64 != null)
+                {
+                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "governorates");
+                    if (!Directory.Exists(uploadsFolder))
+                        Directory.CreateDirectory(uploadsFolder);
 
-            var photoUrl = $"/uploads/{uniqueFileName}";
-            var governorates = new Governorate
-            {
-                NameAr = governorate.NameAr,
-                NameEn = governorate.NameEn,
-                Description = governorate.Description,
-                GovernorateImage = photoUrl
+                    var extension = Path.GetExtension(governorate.GovImageBase64.FileName);
+                    var uniqueFileName = Guid.NewGuid().ToString() + extension;
+                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
-            };
-            if (governorates is null)
-            {
-                return BadRequest("No data in the governorate");
-            }
-            else if (governorate.NameEn.IsNullOrEmpty() || governorate.NameAr.IsNullOrEmpty())
-            {
-                return BadRequest("Name most be not enpty.");
-            }
-            else
-            {
-                repository.Add(governorates);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await governorate.GovImageBase64.CopyToAsync(stream);
+                    }
+
+                    photoUrl = $"/uploads/governorates/{uniqueFileName}";
+                }
+
+                var newGovernorate = new Governorate
+                {
+                    NameAr = governorate.NameAr,
+                    NameEn = governorate.NameEn,
+                    Description = governorate.Description ?? string.Empty,
+                    GovernorateImage = photoUrl!
+                };
+
+                repository.Add(newGovernorate);
                 repository.SaveChenges();
-                return CreatedAtRoute("GetGovernorate", new { id = governorates.GovernorateId }, governorates);
+
+                return CreatedAtRoute("GetGovernorate", new { id = newGovernorate.GovernorateId }, newGovernorate);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while creating the governorate: {ex.Message}");
             }
         }
+
 
         [HttpPut]
         public ActionResult<Governorate> Put(UpdateGovernorate governorate)

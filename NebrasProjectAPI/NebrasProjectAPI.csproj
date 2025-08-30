@@ -24,4 +24,8 @@
     <ProjectReference Include="..\NebrasProjectRepository\NebrasProjectRepository.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\uploads\users\" />
+  </ItemGroup>
+
 </Project>

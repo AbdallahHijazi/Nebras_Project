@@ -14,9 +14,6 @@ namespace NebrasProjectDTOs.DTOs.UsersDTO
         public string Email { get; set; }
         public string Password { get; set; }
         public string FullName { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public bool IsActive { get; set; }
         public IFormFile? ProfileImageBase64 { get; set; }
-
     }
 }

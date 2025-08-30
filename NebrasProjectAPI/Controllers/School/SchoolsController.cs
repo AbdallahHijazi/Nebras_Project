@@ -86,7 +86,7 @@ namespace NebrasProjectAPI.Controllers.Schools
                 NameAr = dto.NameAr.Trim(),
                 NameEn = dto.NameEn.Trim(),
                 City = dto.City.Trim(),
-                Description = dto.Description?.Trim(),
+                Description = dto.Description?.Trim()!,
                 EstimatedRenovationCost = dto.EstimatedRenovationCost,
                 GovernorateId = dto.GovernorateId,
                 HeadTeacherName = dto.HeadTeacherName.Trim(),
@@ -108,13 +108,14 @@ namespace NebrasProjectAPI.Controllers.Schools
                     NameAr = school.NameAr,
                     NameEn = school.NameEn,
                     City = school.City,
-                    Description = school.Description,
+                    Description = school.Description!,
                     EstimatedRenovationCost = school.EstimatedRenovationCost,
                     GovernortesId = school.GovernorateId,
                     HeadTeacherName = school.HeadTeacherName,
                     HeadTeacherNumber = school.HeadTeacherNumber,
                     AddedByUserId = school.AddedByUserId,
                     IsApproved = school.IsApproved,
+                    GovernortesName= governorate.NameAr,
                     IsRequirementsMet = school.IsRequirementsMet,
                     Needs = school.Needs
                 };
@@ -164,7 +165,7 @@ namespace NebrasProjectAPI.Controllers.Schools
                 school.NameAr = dto.NameAr.Trim();
                 school.NameEn = dto.NameEn.Trim();
                 school.City = dto.City.Trim();
-                school.Description = dto.Description?.Trim();
+                school.Description = dto.Description?.Trim()!;
                 school.EstimatedRenovationCost = dto.EstimatedRenovationCost;
                 school.GovernorateId = dto.GovernorateId;
                 school.HeadTeacherName = dto.HeadTeacherName.Trim();

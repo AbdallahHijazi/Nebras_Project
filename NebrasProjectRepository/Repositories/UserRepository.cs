@@ -29,7 +29,7 @@ namespace NebrasProjectRepository.Repositories
             if (!string.IsNullOrEmpty(user.ProfileImageUrl))
             {
                 var safeFileName = Path.GetFileName(user.ProfileImageUrl);
-                var filePath = Path.Combine("wwwroot/uploads", safeFileName);
+                var filePath = Path.Combine("wwwroot/uploads/users", safeFileName);
 
                 if (System.IO.File.Exists(filePath))
                 {
@@ -57,26 +57,26 @@ namespace NebrasProjectRepository.Repositories
                 .Where(s => s.AddedByUserId == user.UserId)
                 .Select(s => new SchoolDto
                 {
-                    //SchoolId = s.SchoolId,
-                    //CityName = s.City != null ? s.City.NameAr : string.Empty,
-                    //SchoolName = s.NameAr,
-                    //GovernorateName = s.City!.Governorate != null ? s.City.Governorate.NameAr : string.Empty,
-                    //CityId = s.City != null ? s.City.CityId : Guid.Empty,
-                    //GovernorateId = s.City!.Governorate != null ? s.City.Governorate.GovernorateId : Guid.Empty
+                    SchoolId = s.SchoolId,
+                    CityName = s.City,
+                    SchoolName = s.NameAr,
+                    GovernorateName = s.Governorate.NameAr,
+                    GovernorateId = s.Governorate.GovernorateId,
                 })
                 .ToListAsync();
 
+            var role = user.RoleId == Guid.Parse("00000000-0000-0000-0000-000000000011") ? "Administrator" : "User";
             return new UserDTO
             {
                 UserId = user.UserId,
                 Username = user.Username,
                 Email = user.Email,
                 FullName = user.FullName,
-                Role = "Administrator",
+                Role = role,
                 CreatedAt = user.CreatedAt,
                 IsActive = user.IsActive,
-                ProfileImageUrl = profileImage,
-                Schools = schools
+                Schools = schools,
+                ProfileImageUrl = profileImage
             };
         }
 

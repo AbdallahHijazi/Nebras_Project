@@ -18,7 +18,7 @@ namespace NebrasProjectModels.Models.Governorates
         public string GovernorateImage { get; set; } = string.Empty;
 
         public int CityCount { get; set; }
-        public int SchoolCount { get; set; } // العدد الكلي للمدن التي في المحافظة يمكن ان نحلصل عليها من ال chart gpt 
+        public int SchoolCount { get; set; }  
         public ICollection<City> Cities { get; set; }
 
         public Governorate()

@@ -21,7 +21,6 @@ namespace NebrasProject.Controllers.Users
         private readonly AppDBContext context;
         private readonly IConfiguration configuration;
 
-
         public UserController
             (
             AppDBContext context,
@@ -63,8 +62,6 @@ namespace NebrasProject.Controllers.Users
             return Ok(user);
         }
 
-
-
         [HttpPost("authenticate")]
         public ActionResult<string> Authenticate(AuthenticationUser authenticationUser)
         {
@@ -92,8 +89,8 @@ namespace NebrasProject.Controllers.Users
                 signingCred
                 );
             var token = new JwtSecurityTokenHandler().WriteToken(securityToken);
-            return Ok(new { Token = token });
 
+            return Ok(new { Token = token, UserId = user.UserId });
         }
 
         private User ValidateUserInformation(string email, string password)
@@ -109,46 +106,66 @@ namespace NebrasProject.Controllers.Users
         [HttpPost]
         public async Task<ActionResult<User>> Post(CreateUser user)
         {
-            if (user == null)
+            try
             {
-                return BadRequest("No data in the users");
+                if (user == null)
+                    return BadRequest("No data provided.");
+
+                if (string.IsNullOrWhiteSpace(user.Username) ||
+                    string.IsNullOrWhiteSpace(user.FullName) ||
+                    string.IsNullOrWhiteSpace(user.Password) ||
+                    string.IsNullOrWhiteSpace(user.Email))
+                {
+                    return BadRequest("Missing required fields: Username, FullName, Password, Email.");
+                }
+
+                if (context.Users.Any(u => u.Email == user.Email))
+                {
+                    return Conflict("A user with the same email already exists.");
+                }
+
+                string? photoUrl = null;
+
+                if (user.ProfileImageBase64 != null)
+                {
+                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "users");
+                    if (!Directory.Exists(uploadsFolder))
+                        Directory.CreateDirectory(uploadsFolder);
+
+                    var extension = Path.GetExtension(user.ProfileImageBase64.FileName);
+                    var uniqueFileName = Guid.NewGuid().ToString() + extension;
+                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await user.ProfileImageBase64.CopyToAsync(stream);
+                    }
+
+                    photoUrl = $"/uploads/users/{uniqueFileName}";
+                }
+
+                var userEntity = new User
+                {
+                    Email = user.Email,
+                    Username = user.Username,
+                    Password = user.Password,
+                    FullName = user.FullName,
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow,
+                    RoleId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                    ProfileImageUrl = photoUrl
+                };
+
+                var newUser = repository.Add(userEntity);
+                repository.SaveChenges();
+
+                return CreatedAtRoute("GetUser", new { id = newUser.UserId }, newUser);
             }
-
-
-            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-            if (!Directory.Exists(uploadsFolder))
+            catch (Exception ex)
             {
-                Directory.CreateDirectory(uploadsFolder);
+                return StatusCode(500, $"An error occurred while creating the user: {ex.Message}");
             }
-
-            var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(user.ProfileImageBase64!.FileName);
-            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                await user.ProfileImageBase64.CopyToAsync(stream);
-            }
-
-            var photoUrl = $"/uploads/{uniqueFileName}";
-
-            var userEntity = new User
-            {
-                Email = user.Email,
-                Username = user.Username,
-                Password = user.Password,
-                FullName = user.FullName,
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow,
-                RoleId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
-                ProfileImageUrl = photoUrl
-            };
-
-            var newUser = repository.Add(userEntity);
-            repository.SaveChenges();
-
-            return CreatedAtRoute("GetUser", new { id = newUser.UserId }, newUser);
         }
-
 
         [HttpPut]
         public ActionResult<User> UpdateUser(UpdateUser user)
@@ -171,12 +188,15 @@ namespace NebrasProject.Controllers.Users
                 oldUser.IsActive = oldUser.IsActive;
                 oldUser.RoleId = oldUser.RoleId;
                 oldUser.CreatedAt = oldUser.CreatedAt;
+                oldUser.ProfileImageUrl = oldUser.ProfileImageUrl;
+
 
                 repository.Update(oldUser);
                 repository.SaveChenges();
                 return NoContent();
             }
         }
+
         [HttpDelete("{id}")]
         public ActionResult<User> Delete(Guid id)
         {
@@ -216,6 +236,7 @@ namespace NebrasProject.Controllers.Users
                 return NoContent();
             }
         }
+
         [HttpGet("isValidPassword")]
         public ActionResult<bool> IsValidPassword(string password, Guid userId)
         {

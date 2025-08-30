@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NebrasProjectDTOs.DTOs.GovernorateDTO;
-using NebrasProjectDTOs.DTOs.Shared;
+﻿using NebrasProjectDTOs.DTOs.Shared;
 
 namespace NebrasProjectDTOs.DTOs.UsersDTO
 {
@@ -25,7 +19,6 @@ namespace NebrasProjectDTOs.DTOs.UsersDTO
     {
         public Guid SchoolId { get; set; }
         public Guid GovernorateId { get; set; }
-        public Guid CityId { get; set; }
         public string GovernorateName { get; set; } = string.Empty;
         public string CityName { get; set; } = string.Empty;
         public string SchoolName { get; set; } = string.Empty;

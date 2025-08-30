@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using NebrasProjectModels.Models.Governorates;
 
 
 namespace NebrasProjectModels.Models.Schools
@@ -21,6 +22,7 @@ namespace NebrasProjectModels.Models.Schools
         public bool IsApproved { get; set; }
         public bool IsActive { get; set; }
         public Guid GovernorateId { get; set; }
+        public Governorate Governorate { get; set; }
         public string HeadTeacherName { get; set; }
         public string HeadTeacherNumber { get; set; }
         public bool IsRequirementsMet { get; set; }
