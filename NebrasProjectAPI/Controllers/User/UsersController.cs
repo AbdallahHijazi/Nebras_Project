@@ -113,19 +113,25 @@ namespace NebrasProject.Controllers.Users
 
                 if (string.IsNullOrWhiteSpace(user.Username) ||
                     string.IsNullOrWhiteSpace(user.FullName) ||
-                    string.IsNullOrWhiteSpace(user.Password) ||
+                    string.IsNullOrWhiteSpace(user.Password) || 
+                    string.IsNullOrWhiteSpace(user.ConfirmPassword) ||
                     string.IsNullOrWhiteSpace(user.Email))
                 {
-                    return BadRequest("Missing required fields: Username, FullName, Password, Email.");
+                    return BadRequest("Missing required fields: Username, FullName, Password, Email,ConfirmPassword.");
                 }
+
 
                 if (context.Users.Any(u => u.Email == user.Email))
                 {
                     return Conflict("A user with the same email already exists.");
                 }
 
-                string? photoUrl = null;
+                if (user.Password != user.ConfirmPassword)
+                {
+                    return BadRequest("Password and Confirm Password do not match");
+                }
 
+                string? photoUrl = null;
                 if (user.ProfileImageBase64 != null)
                 {
                     var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "users");

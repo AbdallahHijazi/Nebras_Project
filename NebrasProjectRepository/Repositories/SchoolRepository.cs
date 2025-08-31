@@ -56,11 +56,5 @@ namespace NebrasProjectRepository.Repositories
 
             return SchoolsList;
         }
-
-
-        public async Task<School> GetSchoolsByDamageLevel(int min, int max)
-        {
-            return null;
-        }
     }
 }
