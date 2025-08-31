@@ -42,9 +42,9 @@ namespace NebrasProjectAPI.Controllers.Schools
         }
 
         [HttpGet("{id}", Name = "GetSchool")]
-        public ActionResult<SchoolDetailsDto> Get(Guid id)
+        public async Task<ActionResult<SchoolDetailsDto>> Get(Guid id)
         {
-            var school = repository.Get(id);
+            var school = await schoolRepository.GetSchoolById(id);
             if (school == null)
             {
                 return NotFound("No data in the schools");
