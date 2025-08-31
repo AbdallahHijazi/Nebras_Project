@@ -189,8 +189,6 @@ namespace NebrasProject.Controllers.Users
                 oldUser.RoleId = oldUser.RoleId;
                 oldUser.CreatedAt = oldUser.CreatedAt;
                 oldUser.ProfileImageUrl = oldUser.ProfileImageUrl;
-
-
                 repository.Update(oldUser);
                 repository.SaveChenges();
                 return NoContent();

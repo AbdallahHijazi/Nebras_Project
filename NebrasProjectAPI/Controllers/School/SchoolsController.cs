@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NebrasProjectDomain.Models;
 using NebrasProjectDTOs.DTOs.SchoolsDTO;
@@ -26,9 +27,10 @@ namespace NebrasProjectAPI.Controllers.Schools
         }
 
         [HttpGet]
-        public ActionResult<List<School>> GetAll()
+        public async Task<ActionResult<List<SchoolDetailsDto>>> GetAll()
         {
-            School[] schools = repository.GetAll().ToArray();
+            var schools = await schoolRepository.GetAllSchools();
+
             if (schools == null)
             {
                 return NotFound("No data in the schools");
@@ -81,6 +83,11 @@ namespace NebrasProjectAPI.Controllers.Schools
             if (governorate == null)
                 return NotFound($"Governorate with ID {dto.GovernorateId} not found.");
 
+            string? photoUrl = null;
+            if (dto.SchoolImageBase64 != null)
+            {
+                photoUrl = schoolRepository.SaveFile(dto.SchoolImageBase64, "schools");
+            }
             var school = new School
             {
                 NameAr = dto.NameAr.Trim(),
@@ -95,6 +102,7 @@ namespace NebrasProjectAPI.Controllers.Schools
                 IsApproved = false,
                 IsRequirementsMet = false,
                 Needs = dto.Needs ?? new List<string>(),
+                SchoolImageUrl = photoUrl!,
             };
 
             try
@@ -110,14 +118,15 @@ namespace NebrasProjectAPI.Controllers.Schools
                     City = school.City,
                     Description = school.Description!,
                     EstimatedRenovationCost = school.EstimatedRenovationCost,
-                    GovernortesId = school.GovernorateId,
+                    GovernorteId = school.GovernorateId,
                     HeadTeacherName = school.HeadTeacherName,
                     HeadTeacherNumber = school.HeadTeacherNumber,
                     AddedByUserId = school.AddedByUserId,
                     IsApproved = school.IsApproved,
-                    GovernortesName= governorate.NameAr,
+                    GovernortesName = governorate.NameAr,
                     IsRequirementsMet = school.IsRequirementsMet,
-                    Needs = school.Needs
+                    Needs = school.Needs,
+                    ProfileImageUrl = photoUrl != null ? repository.GetFileAsBase64(photoUrl, "schools") : null
                 };
 
                 return CreatedAtAction(nameof(Get), new { id = school.SchoolId }, result);
@@ -147,15 +156,9 @@ namespace NebrasProjectAPI.Controllers.Schools
                 return BadRequest("Missing required fields.");
             }
 
-            if (dto.UserId == Guid.Empty || dto.GovernorateId == Guid.Empty)
-                return BadRequest("Invalid UserId or GovernorateId.");
-
             var school = await context.Schools.FindAsync(dto.SchoolId);
             if (school == null)
                 return NotFound($"School with ID {dto.SchoolId} not found.");
-
-            if (!await context.Users.AnyAsync(u => u.UserId == dto.UserId))
-                return NotFound($"User with ID {dto.UserId} not found.");
 
             if (!await context.Governorates.AnyAsync(g => g.GovernorateId == dto.GovernorateId))
                 return NotFound($"Governorate with ID {dto.GovernorateId} not found.");
@@ -173,9 +176,9 @@ namespace NebrasProjectAPI.Controllers.Schools
                 school.UpdatedAt = DateTime.UtcNow;
                 school.IsRequirementsMet = dto.IsRequirementsMet;
                 school.Needs = dto.Needs ?? new List<string>();
+                school.SchoolId = dto.SchoolId;
                 repository.Update(school);
                 await context.SaveChangesAsync();
-
                 return NoContent();
             }
             catch (DbUpdateException ex)
@@ -206,39 +209,39 @@ namespace NebrasProjectAPI.Controllers.Schools
             }
         }
 
-        [HttpGet("governorate/{governorateId}")]
-        public async Task<IActionResult> GetSchoolsByGovernorate(Guid governorateId)
-        {
-            try
-            {
-                if (governorateId == Guid.Empty)
-                {
-                    return BadRequest("Governorate ID is required.");
-                }
+        //[HttpGet("governorate/{governorateId}")]
+        //public async Task<IActionResult> GetSchoolsByGovernorate(Guid governorateId)
+        //{
+        //    try
+        //    {
+        //        if (governorateId == Guid.Empty)
+        //        {
+        //            return BadRequest("Governorate ID is required.");
+        //        }
 
-                var governorate = await context.Governorates.FindAsync(governorateId);
-                if (governorate == null)
-                {
-                    return NotFound($"Governorate with ID {governorateId} not found.");
-                }
+        //        var governorate = await context.Governorates.FindAsync(governorateId);
+        //        if (governorate == null)
+        //        {
+        //            return NotFound($"Governorate with ID {governorateId} not found.");
+        //        }
 
-                var schools = await schoolRepository.GetSchoolsByGovernorateId(governorateId);
+        //        var schools = await schoolRepository.GetSchoolsByGovernorateId(governorateId);
 
-                if (schools == null || !schools.Any())
-                {
-                    return NotFound("No schools found in the specified governorate.");
-                }
+        //        if (schools == null || !schools.Any())
+        //        {
+        //            return NotFound("No schools found in the specified governorate.");
+        //        }
 
-                return Ok(schools);
-            }
-            catch (DbUpdateException dbEx)
-            {
-                return StatusCode(500, $"Database error: {dbEx.Message}");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"An unexpected error occurred: {ex.Message}");
-            }
-        }
+        //        return Ok(schools);
+        //    }
+        //    catch (DbUpdateException dbEx)
+        //    {
+        //        return StatusCode(500, $"Database error: {dbEx.Message}");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, $"An unexpected error occurred: {ex.Message}");
+        //    }
+        //}
     }
 }

@@ -3,7 +3,6 @@ using NebrasProjectDomain.Models;
 using NebrasProjectDTOs.DTOs.GovernorateDTO;
 using NebrasProjectDTOs.DTOs.Shared;
 using NebrasProjectModels.Models.Governorates;
-using NebrasProjectModels.Models.Users;
 using NebrasProjectRepository.SheardRepository;
 
 namespace NebrasProjectRepository.Repositories
@@ -12,7 +11,8 @@ namespace NebrasProjectRepository.Repositories
     {
         private readonly AppDBContext context;
 
-        public GovernorateRepository(AppDBContext context) : base(context)
+        public GovernorateRepository(AppDBContext context
+            ) : base(context)
         {
             this.context = context;
         }
@@ -28,29 +28,8 @@ namespace NebrasProjectRepository.Repositories
 
             if (!string.IsNullOrEmpty(gove!.GovernorateImage!))
             {
-                var safeFileName = Path.GetFileName(gove!.GovernorateImage!);
+                profileImage = GetGovernorateImage(gove.GovernorateImage);
 
-                var filePath = Path.Combine("wwwroot/uploads", safeFileName);
-
-                if (System.IO.File.Exists(filePath))
-                {
-                    var fileBytes = System.IO.File.ReadAllBytes(filePath);
-                    base64String = Convert.ToBase64String(fileBytes);
-
-                    var extension = Path.GetExtension(filePath).ToLower();
-                    contentType = extension switch
-                    {
-                        ".jpg" or ".jpeg" => "image/jpeg",
-                        ".png" => "image/png",
-                        ".gif" => "image/gif",
-                        _ => "application/octet-stream"
-                    };
-                    profileImage = new FileData
-                    {
-                        Base64String = base64String,
-                        ContentType = contentType
-                    };
-                }
             }
             var governorate = await context.Governorates
                 .Where(g => g.GovernorateId == id)
@@ -59,9 +38,9 @@ namespace NebrasProjectRepository.Repositories
                     GovernorateId = g.GovernorateId,
                     NameAr = g.NameAr,
                     NameEn = g.NameEn,
-                    CityCount = g.Cities.Count,
+                    CityCount = g.CityCount,
                     Description = g.Description,
-                    SchoolCount = g.Cities.SelectMany(c => c.Schools).Count(),
+                    SchoolCount = g.SchoolCount,
                     GovernorateImageUrl = profileImage!
                 }).FirstOrDefaultAsync();
             if (governorate == null)
@@ -70,6 +49,11 @@ namespace NebrasProjectRepository.Repositories
             }
 
             return governorate;
+        }
+
+        public FileData? GetGovernorateImage(string relativePath)
+        {
+            return GetFileAsBase64(relativePath, "governorates");
         }
 
         public async Task<GovernorateSummaryDTO> GetGovernorateSummary(Guid id)

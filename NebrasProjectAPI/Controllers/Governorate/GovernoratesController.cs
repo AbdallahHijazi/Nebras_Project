@@ -4,8 +4,6 @@ using NebrasProjectDomain.Models;
 using NebrasProjectDTOs.DTOs.GovernorateDTO;
 using NebrasProjectDTOs.DTOs.Shared;
 using NebrasProjectModels.Models.Governorates;
-using NebrasProjectModels.Models.Schools;
-using NebrasProjectModels.Models.Users;
 using NebrasProjectRepository.Repositories;
 using NebrasProjectRepository.SheardRepository;
 
@@ -29,7 +27,6 @@ namespace NebrasProjectAPI.Controllers.Governorates
             this.governorateRepository = governorateRepository;
         }
 
-
         [HttpGet]
         public ActionResult<List<GovernorateDetailsDTO>> GetAll()
         {
@@ -46,56 +43,23 @@ namespace NebrasProjectAPI.Controllers.Governorates
 
                 if (!string.IsNullOrEmpty(g?.GovernorateImage))
                 {
-                    var safeFileName = Path.GetFileName(g.GovernorateImage);
-                    var filePath = Path.Combine("wwwroot/uploads/governorates", safeFileName);
+                    profileImage = repository.GetFileAsBase64(g.GovernorateImage, "governorates");
 
-                    if (System.IO.File.Exists(filePath))
-                    {
-                        var fileBytes = System.IO.File.ReadAllBytes(filePath);
-                        profileImage = new FileData
-                        {
-                            Base64String = Convert.ToBase64String(fileBytes),
-                            ContentType = Path.GetExtension(filePath).ToLower() switch
-                            {
-                                ".jpg" or ".jpeg" => "image/jpeg",
-                                ".png" => "image/png",
-                                ".gif" => "image/gif",
-                                _ => "application/octet-stream"
-                            }
-                        };
-                    }
                 }
-
                 governorates.Add(new GovernorateDetailsDTO
                 {
                     GovernorateId = g.GovernorateId,
                     NameAr = g.NameAr,
                     NameEn = g.NameEn,
                     Description = g.Description,
-                    CityCount = g.Cities?.Count ?? 0,
-                    SchoolCount = g.Cities?.SelectMany(c => c.Schools ?? Enumerable.Empty<School>()).Count() ?? 0,
+                    CityCount = g.CityCount,
+                    SchoolCount = g.SchoolCount,
                     GovernorateImageUrl = profileImage!
                 });
             }
 
-
             return Ok(governorates);
         }
-
-
-        //[HttpGet("{id}/schools-summary", Name = "GetGovernorateWithSchools")]
-        //public async Task<ActionResult<GovernorateDetailsDTO>> GetGovernorateWithSchools(Guid id)
-        //{
-        //    var governorate = await governorateRepository.GetGovernorateDetails(id);
-        //    if (governorate == null)
-        //    {
-        //        return NotFound("No data in the governorates");
-        //    }
-        //    else
-        //    {
-        //        return Ok(governorate);
-        //    }
-        //}
 
         [HttpGet("{id}", Name = "GetGovernorate")]
         public async Task<ActionResult<GovernorateDetailsDTO>> Get(Guid id)
@@ -127,20 +91,7 @@ namespace NebrasProjectAPI.Controllers.Governorates
 
                 if (governorate.GovImageBase64 != null)
                 {
-                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "governorates");
-                    if (!Directory.Exists(uploadsFolder))
-                        Directory.CreateDirectory(uploadsFolder);
-
-                    var extension = Path.GetExtension(governorate.GovImageBase64.FileName);
-                    var uniqueFileName = Guid.NewGuid().ToString() + extension;
-                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await governorate.GovImageBase64.CopyToAsync(stream);
-                    }
-
-                    photoUrl = $"/uploads/governorates/{uniqueFileName}";
+                    photoUrl = repository.SaveFile(governorate.GovImageBase64, "governorates");
                 }
 
                 var newGovernorate = new Governorate
@@ -158,7 +109,7 @@ namespace NebrasProjectAPI.Controllers.Governorates
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"An error occurred while creating the governorate: {ex.Message}");
+                return StatusCode(500, $"An error occurred while creating the governorate: {ex.InnerException?.Message ?? ex.Message}");
             }
         }
 
@@ -214,6 +165,5 @@ namespace NebrasProjectAPI.Controllers.Governorates
 
             return Ok(governorateSummary);
         }
-
     }
 }

@@ -28,29 +28,7 @@ namespace NebrasProjectRepository.Repositories
 
             if (!string.IsNullOrEmpty(user.ProfileImageUrl))
             {
-                var safeFileName = Path.GetFileName(user.ProfileImageUrl);
-                var filePath = Path.Combine("wwwroot/uploads/users", safeFileName);
-
-                if (System.IO.File.Exists(filePath))
-                {
-                    var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
-                    var base64String = Convert.ToBase64String(fileBytes);
-
-                    var extension = Path.GetExtension(filePath).ToLower();
-                    var contentType = extension switch
-                    {
-                        ".jpg" or ".jpeg" => "image/jpeg",
-                        ".png" => "image/png",
-                        ".gif" => "image/gif",
-                        _ => "application/octet-stream"
-                    };
-
-                    profileImage = new FileData
-                    {
-                        Base64String = base64String,
-                        ContentType = contentType
-                    };
-                }
+                profileImage = GetUserImage(user.ProfileImageUrl);
             }
 
             var schools = await context.Schools
@@ -66,6 +44,7 @@ namespace NebrasProjectRepository.Repositories
                 .ToListAsync();
 
             var role = user.RoleId == Guid.Parse("00000000-0000-0000-0000-000000000011") ? "Administrator" : "User";
+            var roleId = user.RoleId == Guid.Parse("00000000-0000-0000-0000-000000000011") ? "11" : "01";
             return new UserDTO
             {
                 UserId = user.UserId,
@@ -76,8 +55,14 @@ namespace NebrasProjectRepository.Repositories
                 CreatedAt = user.CreatedAt,
                 IsActive = user.IsActive,
                 Schools = schools,
+                RoleId = roleId,
                 ProfileImageUrl = profileImage
             };
+        }
+
+        public FileData? GetUserImage(string relativePath)
+        {
+            return GetFileAsBase64(relativePath, "users");
         }
 
     }

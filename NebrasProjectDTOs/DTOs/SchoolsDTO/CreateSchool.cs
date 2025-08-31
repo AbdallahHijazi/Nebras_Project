@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Http;
 
 namespace NebrasProjectDTOs.DTOs.SchoolsDTO
 {
@@ -21,7 +17,7 @@ namespace NebrasProjectDTOs.DTOs.SchoolsDTO
 
         public string HeadTeacherName { get; set; }
         public string HeadTeacherNumber { get; set; }
+        public IFormFile? SchoolImageBase64 { get; set; }
+
     }
-
-
 }

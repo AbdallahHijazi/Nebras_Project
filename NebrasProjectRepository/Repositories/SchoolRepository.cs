@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NebrasProjectDomain.Models;
 using NebrasProjectDTOs.DTOs.SchoolsDTO;
+using NebrasProjectDTOs.DTOs.Shared;
 using NebrasProjectModels.Models.Schools;
 using NebrasProjectRepository.SheardRepository;
 
@@ -15,56 +16,50 @@ namespace NebrasProjectRepository.Repositories
             this.context = context;
         }
 
-        public async Task<IList<SchoolDetailsDto>> GetSchoolsByGovernorateId(Guid governorateId)
+        public async Task<IList<SchoolDetailsDto>> GetAllSchools()
         {
-            var governorate = await context.Governorates
-                .FirstOrDefaultAsync(g => g.GovernorateId == governorateId);
+            var schools = await context.Schools
+                .Include(s => s.Governorate)
+                .ToListAsync();
 
-            if (governorate == null)
-                return new List<SchoolDetailsDto>(); // أو throw NotFoundException إذا كنت تستخدم service layer
+            var SchoolsList = new List<SchoolDetailsDto>();
 
-            //var schools = await context.Schools
-            //   .Where(s => s.City.GovernorateId == governorateId)
-            //   .Select(s => new SchoolDetailsDto
-            //   {
-            //       SchoolId = s.SchoolId,
-            //       NameAr = s.NameAr,
-            //       NameEn = s.NameEn,
-            //       CityId = s.CityId,
-            //       AddressDetails = s.AddressDetails,
-            //       Latitude = s.Latitude,
-            //       Longitude = s.Longitude,
-            //       ConditionDescription = s.ConditionDescription,
-            //       EstimatedRenovationCost = s.EstimatedRenovationCost,
-            //       AddedByUserId = s.AddedByUserId,
-            //       StudentCapacity = s.StudentCapacity,
-            //       NumberOfClassrooms = s.NumberOfClassrooms,
-            //       YearEstablished = s.YearEstablished,
-            //       SchoolTypeId = s.SchoolTypeId,
-            //       SchoolStatusId = s.SchoolStatusId,
-            //       AddedByUserName = context.Users
-            //            .Where(u => u.UserId == s.AddedByUserId)
-            //            .Select(u => u.FullName)
-            //            .FirstOrDefault()!,
-            //       ApprovedByUserId = s.ApprovedByUserId,
-            //       ApprovedByUserName = context.Users
-            //            .Where(u => u.UserId == s.ApprovedByUserId)
-            //            .Select(u => u.FullName)
-            //            .FirstOrDefault()!,
-            //       IsApproved = s.IsApproved,
-                   
+            foreach (var school in schools)
+            {
+                FileData? schoolImage = null;
+                if (!string.IsNullOrEmpty(school.SchoolImageUrl)) 
+                {
+                    schoolImage = GetFileAsBase64(school.SchoolImageUrl, "schools");
+                }
 
-                   
-            //       CityName = s.City.NameAr,
-            //   }).ToListAsync();
-            var schools = new List<SchoolDetailsDto>();
-            return schools;
+                var schoole = new SchoolDetailsDto
+                {
+                    SchoolId = school.SchoolId,
+                    NameAr = school.NameAr,
+                    NameEn = school.NameEn,
+                    City = school.City,
+                    Description = school.Description,
+                    EstimatedRenovationCost = school.EstimatedRenovationCost,
+                    GovernorteId = school.GovernorateId,
+                    GovernortesName = school.Governorate?.NameAr!,
+                    HeadTeacherName = school.HeadTeacherName,
+                    HeadTeacherNumber = school.HeadTeacherNumber,
+                    AddedByUserId = school.AddedByUserId,
+                    IsApproved = school.IsApproved,
+                    IsRequirementsMet = school.IsRequirementsMet,
+                    Needs = school.Needs,
+                    ProfileImageUrl = schoolImage
+                };
+
+                SchoolsList.Add(schoole);
+            }
+
+            return SchoolsList;
         }
+
 
         public async Task<School> GetSchoolsByDamageLevel(int min, int max)
         {
-           
-
             return null;
         }
     }

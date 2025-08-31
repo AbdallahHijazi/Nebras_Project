@@ -27,6 +27,7 @@ namespace NebrasProjectModels.Models.Schools
         public string HeadTeacherNumber { get; set; }
         public bool IsRequirementsMet { get; set; }
         public List<string> Needs { get; set; } = new List<string>();
+        public string? SchoolImageUrl { get; set; }
 
         public School()
         {

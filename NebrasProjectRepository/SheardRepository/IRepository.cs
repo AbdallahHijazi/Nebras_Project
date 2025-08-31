@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using NebrasProjectDTOs.DTOs.Shared;
 
 namespace NebrasProjectRepository.SheardRepository
 {
@@ -19,6 +17,10 @@ namespace NebrasProjectRepository.SheardRepository
         T? Delete(T item);
 
         void SaveChenges();
+
+        FileData GetFileAsBase64(string relativePath, string folderName);
+
+        string SaveFile(IFormFile file, string folderName);
 
     }
 }

@@ -91,7 +91,6 @@ namespace NebrasProjectRepository.Repositories
             return cities;
         }
 
-
         public async Task<GovernorateDto> GetGovernorateWithCities(Guid id)
         {
             return await context.Governorates
@@ -101,15 +100,8 @@ namespace NebrasProjectRepository.Repositories
                     GovernorateId = g.GovernorateId,
                     NameAr = g.NameAr,
                     NameEn = g.NameEn,
-                    Cities = g.Cities.Select(c => new CityBasicDto
-                    {
-                        CityId = c.CityId,
-                        NameAr = c.NameAr,
-                        NameEn = c.NameEn
-                    }).ToList()
+                   
                 }).FirstOrDefaultAsync();
         }
-
-
     }
 }
