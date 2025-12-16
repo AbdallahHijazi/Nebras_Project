@@ -7,13 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="wwwroot\uploads\schoole\**" />
-    <Content Remove="wwwroot\uploads\schoole\**" />
-    <EmbeddedResource Remove="wwwroot\uploads\schoole\**" />
-    <None Remove="wwwroot\uploads\schoole\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.4" />
@@ -32,8 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\uploads\governorates\" />
-    <Folder Include="wwwroot\uploads\users\" />
+    <Folder Include="wwwroot\uploads\" />
   </ItemGroup>
 
 </Project>

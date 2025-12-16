@@ -1,4 +1,4 @@
-namespace NebrasPhotoService
+namespace NebrasGateway
 {
     public class WeatherForecast
     {

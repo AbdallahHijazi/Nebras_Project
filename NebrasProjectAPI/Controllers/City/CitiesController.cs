@@ -6,7 +6,7 @@ using NebrasProjectModels.Models.Citys;
 using NebrasProjectRepository.Repositories;
 using NebrasProjectRepository.SheardRepository;
 
-namespace NebrasProjectAPI.Controllers.Citys
+namespace NebrasPhotoService.Controllers.Citys
 {
     [Route("api/[controller]")]
     [ApiController]

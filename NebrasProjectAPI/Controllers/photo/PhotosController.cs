@@ -7,7 +7,7 @@ using NebrasProjectModels.Models.Photos;
 using NebrasProjectRepository.Repositories;
 using NebrasProjectRepository.SheardRepository;
 
-namespace NebrasProjectAPI.Controllers.photo
+namespace NebrasPhotoService.Controllers.photo
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -16,58 +16,81 @@ namespace NebrasProjectAPI.Controllers.photo
         private readonly AppDBContext context;
         private readonly IRepository<SchoolPhoto> repository;
         private readonly PhotosRepository photosRepository;
+        private readonly IConfiguration config;
+        private readonly IWebHostEnvironment env;
 
         public PhotosController(AppDBContext context,
                                 IRepository<SchoolPhoto> repository,
-                                PhotosRepository photosRepository)
+                                PhotosRepository photosRepository,
+                                IConfiguration config,
+                                IWebHostEnvironment env)
         {
             this.context = context;
             this.repository = repository;
             this.photosRepository = photosRepository;
+            this.config = config;
+            this.env = env;
         }
         [HttpPost]
         public async Task<ActionResult<SchoolPhoto>> CreateSchoolPhoto([FromForm] CreatePhoto dto)
         {
-            if (dto.Photo == null || dto.Photo.Length == 0)
-            {
-                return BadRequest("No photo uploaded");
-            }
-
-            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-            if (!Directory.Exists(uploadsFolder))
-            {
-                Directory.CreateDirectory(uploadsFolder);
-            }
-
-            var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(dto.Photo.FileName);
-            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                await dto.Photo.CopyToAsync(stream);
-            }
-
-            var photoUrl = $"/uploads/{uniqueFileName}";
-
-            var schoolPhoto = new SchoolPhoto
-            {
-                SchoolId = dto.SchoolId,
-                PhotoUrl = photoUrl,
-                Description = dto.Description,
-                IsCoverPhoto = dto.IsCoverPhoto
-            };
-
-            var newPhoto = repository.Add(schoolPhoto);
-            repository.SaveChenges();
-
-            //if (result <= 0)
+            //if (dto.Photo == null || dto.Photo.Length == 0)
             //{
-            //    return StatusCode(500, "Failed to save the photo");
+            //    return BadRequest("No photo uploaded");
+            //}
+            //var uploadsFolder = GetUploadsFolder();
+
+            //var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(dto.Photo.FileName);
+            //var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+            //using (var stream = new FileStream(filePath, FileMode.Create))
+            //{
+            //    await dto.Photo.CopyToAsync(stream);
             //}
 
-            return Ok(newPhoto);
+            //var photoUrl = $"/uploads/{uniqueFileName}";
+
+            //var schoolPhoto = new SchoolPhoto
+            //{
+            //    SchoolId = dto.SchoolId,
+            //    PhotoUrl = photoUrl,
+            //    Description = dto.Description,
+            //    IsCoverPhoto = dto.IsCoverPhoto
+            //};
+
+            //var newPhoto = repository.Add(schoolPhoto);
+            //repository.SaveChenges();
+
+            //return Ok(newPhoto);
+
+            return StatusCode(410, "This endpoint has been migrated to a new service.");
         }
 
+        [HttpGet("{schoolId}/{photoId}", Name = "GetPhotoBySchoolAndId")]
+        public ActionResult<string> GetById(Guid schoolId, Guid photoId)
+        {
+            //if (schoolId == Guid.Empty || photoId == Guid.Empty)
+            //{
+            //    return NotFound("Invalid identifiers.");
+            //}
+
+            //var photo = context.SchoolPhotos
+            //    .FirstOrDefault(p => p.PhotoId == photoId && p.SchoolId == schoolId);
+
+            //if (photo == null) return NotFound();
+
+            //// مسار الصورة من الـ PhotoUrl المخزنة في قاعدة البيانات
+            //var uploadsFolder = GetUploadsFolder();
+            //var filePath = Path.Combine(uploadsFolder, Path.GetFileName(photo.PhotoUrl));
+
+            //if (!System.IO.File.Exists(filePath)) return NotFound("File not found");
+
+            //// قراءة وتحويل الصورة إلى Base64
+            //var fileBytes = System.IO.File.ReadAllBytes(filePath);
+            //var base64String = Convert.ToBase64String(fileBytes);
+
+            return StatusCode(410, "This endpoint has been migrated to a new service.");
+        }
         [HttpGet("{id}", Name = "GetAllPhotos")]
         public ActionResult<List<SchoolPhoto>> GetAllForSpecificSchool(Guid id)
         {
@@ -78,33 +101,6 @@ namespace NebrasProjectAPI.Controllers.photo
             }
             return Ok(schoolPhoto);
         }
-
-        [HttpGet("{schoolId}/{photoId}", Name = "GetPhotoBySchoolAndId")]
-        public ActionResult<string> GetById(Guid schoolId, Guid photoId)
-        {
-            if (schoolId == Guid.Empty || photoId == Guid.Empty)
-            {
-                return NotFound("Invalid identifiers.");
-            }
-
-            var photo = context.SchoolPhotos
-                .FirstOrDefault(p => p.PhotoId == photoId && p.SchoolId == schoolId);
-
-            if (photo == null) return NotFound();
-
-            // مسار الصورة من الـ PhotoUrl المخزنة في قاعدة البيانات
-            var filePath = Path.Combine("wwwroot/uploads", Path.GetFileName(photo.PhotoUrl));
-
-            if (!System.IO.File.Exists(filePath)) return NotFound("File not found");
-
-            // قراءة وتحويل الصورة إلى Base64
-            var fileBytes = System.IO.File.ReadAllBytes(filePath);
-            var base64String = Convert.ToBase64String(fileBytes);
-
-            return Ok(base64String);
-        }
-
-
 
         [HttpDelete("{id}")]
         public ActionResult<SchoolPhoto> DeletePhotoById(Guid id)
@@ -124,5 +120,6 @@ namespace NebrasProjectAPI.Controllers.photo
             context.SaveChanges();
             return NoContent();
         }
+
     }
 }

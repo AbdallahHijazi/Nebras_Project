@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace NebrasPhotoService.Controllers
+namespace NebrasGateway.Controllers
 {
     [ApiController]
     [Route("[controller]")]

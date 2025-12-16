@@ -7,7 +7,7 @@ using NebrasProjectModels.Models.Governorates;
 using NebrasProjectRepository.Repositories;
 using NebrasProjectRepository.SheardRepository;
 
-namespace NebrasProjectAPI.Controllers.Governorates
+namespace NebrasPhotoService.Controllers.Governorates
 {
     [Route("api/[controller]")]
     [ApiController]

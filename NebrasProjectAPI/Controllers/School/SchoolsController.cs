@@ -7,7 +7,7 @@ using NebrasProjectModels.Models.Schools;
 using NebrasProjectRepository.Repositories;
 using NebrasProjectRepository.SheardRepository;
 
-namespace NebrasProjectAPI.Controllers.Schools
+namespace NebrasPhotoService.Controllers.Schools
 {
     [Route("api/[controller]")]
     [ApiController]

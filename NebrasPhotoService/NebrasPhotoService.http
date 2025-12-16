@@ -1,0 +1,6 @@
+@NebrasPhotoService_HostAddress = http://localhost:5032
+
+GET {{NebrasPhotoService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

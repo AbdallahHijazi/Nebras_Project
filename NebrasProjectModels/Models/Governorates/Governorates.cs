@@ -27,3 +27,4 @@ namespace NebrasProjectModels.Models.Governorates
         }
     }
 }
+    

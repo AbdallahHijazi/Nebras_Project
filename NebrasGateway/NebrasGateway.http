@@ -1,0 +1,6 @@
+@NebrasGateway_HostAddress = http://localhost:5103
+
+GET {{NebrasGateway_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
