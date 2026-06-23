@@ -19,10 +19,10 @@ namespace NebrasProjectDomain.Models
         public DbSet<User> Users { get; set; }
 
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=NebrasDB");
-        }
+        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //{
+        //    optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=NebrasDB;Username=postgres;Password=postgres");
+        //}
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

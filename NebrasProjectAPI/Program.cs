@@ -1,4 +1,5 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using NebrasProjectDomain.Models;
 using NebrasProjectModels.Models.Citys;
 using NebrasProjectModels.Models.Governorates;
@@ -55,6 +56,8 @@ builder.Services.AddAuthentication().AddJwtBearer(options =>
 
     };
 });
+builder.Services.AddDbContext<AppDBContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
